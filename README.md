@@ -24,10 +24,11 @@ A versão anterior em Lua tinha limitações sérias:
 
 ## 🚀 Características
 
-### Menu Radial Completo
+### Menu Radial de 3 Níveis
 
-- **Círculo central:** 8 cores (preto, azul, vermelho, verde, laranja, amarelo, magenta, cinza)
-- **Anel externo:** 10 ferramentas (canetas, borracha, marca-texto, zoom, navegação)
+- **Nível 1 (Centro):** Color picker HSV estilo Krita - Selecione qualquer cor do espectro
+- **Nível 2 (Anel Médio):** 16 cores predefinidas (grayscale + cores vibrantes)
+- **Nível 3 (Anel Externo):** 16 ferramentas (canetas, borracha, marca-texto, zoom, undo/redo, navegação, texto, imagem, régua)
 - **Hover highlighting:** Destaque visual da fatia sob o cursor
 - **Posição automática:** Menu aparece exatamente onde está a caneta
 

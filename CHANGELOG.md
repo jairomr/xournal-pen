@@ -5,10 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **3-level radial menu** - Major upgrade from 2-level design
+- **HSV color picker** (Level 1) - Krita-style color wheel in center for custom color selection
+- **16 preset colors** (Level 2) - Expanded from 8 colors, including grayscale gradient
+- **16 tools** (Level 3) - Added: pen_thick, undo, redo, text, image, ruler
+- **Custom color support** - HSV picker maps to closest predefined color
+- **Tool shortcuts** - All 16 tools now mapped to Xournal++ keyboard shortcuts
+
+### Changed
+- Upgraded menu from 2 levels (8 colors + 10 tools) to 3 levels (HSV picker + 16 colors + 16 tools)
+- Color mapping expanded to support all 16 preset colors in radial menu
+- Controller now intelligently maps custom HSV colors to closest available shortcut
+
 ## [2.0.0] - 2024-12-03
 
 ### Added
-- **Complete rewrite in Python + Kivy** - Standalone application replacing Lua plugin
+- **Complete rewrite in Python + PyQt5** - Standalone application replacing Lua plugin
 - **Native stylus button capture** - Detects side button press automatically via pynput
 - **Real overlay window** - Menu appears over Xournal++ without drawing on page
 - **Automatic cursor position detection** - Menu appears exactly where cursor is
