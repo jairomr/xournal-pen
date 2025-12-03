@@ -65,6 +65,30 @@ def test_qfont_weight():
         raise
 
 
+def test_qtabletevent():
+    """Testa se QTabletEvent existe (para mesa digitalizadora)"""
+    try:
+        from PyQt6.QtGui import QTabletEvent
+
+        # Verificar se QTabletEvent existe
+        assert QTabletEvent is not None, "QTabletEvent não existe"
+
+        # Verificar se Type enum existe
+        assert hasattr(QTabletEvent, 'Type'), "QTabletEvent.Type não existe"
+        assert hasattr(QTabletEvent.Type, 'TabletPress'), "QTabletEvent.Type.TabletPress não existe"
+        assert hasattr(QTabletEvent.Type, 'TabletMove'), "QTabletEvent.Type.TabletMove não existe"
+        assert hasattr(QTabletEvent.Type, 'TabletRelease'), "QTabletEvent.Type.TabletRelease não existe"
+
+        print("✓ QTabletEvent está correto (suporte a mesa digitalizadora)")
+        return True
+    except ImportError:
+        print("⚠ PyQt6 não disponível, teste pulado")
+        return False
+    except AssertionError as e:
+        print(f"✗ ERRO: {e}")
+        raise
+
+
 def test_qt_constants():
     """Testa constantes Qt"""
     try:
@@ -151,10 +175,12 @@ if __name__ == "__main__":
 
     print()
 
-    # Testes 3-5: APIs específicas
+    # Testes 3-6: APIs específicas
     test_qpainter_renderhint()
     print()
     test_qfont_weight()
+    print()
+    test_qtabletevent()
     print()
     test_qt_constants()
     print()

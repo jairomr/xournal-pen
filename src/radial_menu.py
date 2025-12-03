@@ -5,7 +5,7 @@ Menu radial de 3 níveis: Color Picker (centro) + 16 cores + Ferramentas
 
 from PyQt6.QtWidgets import QWidget
 from PyQt6.QtCore import Qt, QPoint, QRect, pyqtSignal
-from PyQt6.QtGui import QPainter, QPen, QBrush, QColor, QFont, QPainterPath, QConicalGradient, QRadialGradient
+from PyQt6.QtGui import QPainter, QPen, QBrush, QColor, QFont, QPainterPath, QConicalGradient, QRadialGradient, QTabletEvent
 import math
 import colorsys
 
@@ -27,6 +27,10 @@ class RadialMenuWidget(QWidget):
         # Habilitar tracking de mouse e aceitar foco
         self.setMouseTracking(True)
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+
+        # Habilitar eventos de tablet (caneta digital/mesa digitalizadora)
+        self.setAttribute(Qt.WidgetAttribute.WA_TabletTracking)
+        self.tablet_pressed = False
 
         # Configuração dos raios (3 níveis)
         self.picker_radius = 50      # Nível 1: Color picker HSV no centro
@@ -110,7 +114,10 @@ class RadialMenuWidget(QWidget):
         print(f"  → Widget visível: {self.isVisible()}")
         print(f"  → Geometria: x={self.x()}, y={self.y()}, w={self.width()}, h={self.height()}")
         print(f"  → Mouse tracking: {self.hasMouseTracking()}")
+        print(f"  → Tablet tracking: {self.testAttribute(Qt.WidgetAttribute.WA_TabletTracking)}")
         print(f"  → Focus policy: {self.focusPolicy()}")
+        print()
+        print("  AGUARDANDO: Toque da caneta ou clique do mouse...")
 
     def calculate_angle(self, x, y):
         """Calcula o ângulo de um ponto em relação ao centro"""
@@ -222,6 +229,76 @@ class RadialMenuWidget(QWidget):
         else:
             print(f"→ Botão não tratado: {event.button()} (esperado: {Qt.MouseButton.LeftButton})")
             print(f"   Para fechar o menu, clique com o botão esquerdo fora do menu ou pressione ESC")
+
+    def tabletEvent(self, event):
+        """Processa eventos de tablet/caneta digital"""
+        print(f"→ TABLET EVENT! Tipo: {event.type()}")
+        print(f"   Posição: ({event.position().x():.0f}, {event.position().y():.0f})")
+        print(f"   Pressão: {event.pressure()}")
+        print(f"   Dispositivo: {event.deviceType()}")
+
+        # TabletPress - caneta tocou a superfície
+        if event.type() == QTabletEvent.Type.TabletPress:
+            print("→ TABLET PRESS (caneta tocou)")
+            self.tablet_pressed = True
+            pos = event.position()
+            x, y = int(pos.x()), int(pos.y())
+
+            level, data = self.detect_section(x, y)
+            print(f"→ Seção detectada: {level}, índice: {data}")
+
+            if level == "picker" and data is not None:
+                # Seleção de cor do HSV picker
+                hue = data / (2 * math.pi)
+                dist = self.calculate_distance(x, y)
+                saturation = min(dist / self.picker_radius, 1.0)
+                value = 1.0
+
+                color = self.hsv_to_qcolor(hue, saturation, value)
+                print(f"→ COR PICKER SELECIONADA (TABLET): RGB({color.red()}, {color.green()}, {color.blue()})")
+                self.itemSelected.emit("color", {"name": "Custom", "color": color})
+                self.hide()
+
+            elif level == "color" and data is not None:
+                color_data = self.colors[data]
+                print(f"→ COR SELECIONADA (TABLET): {color_data['name']}")
+                self.itemSelected.emit("color", color_data)
+                self.hide()
+
+            elif level == "tool" and data is not None:
+                tool_data = self.tools[data]
+                print(f"→ FERRAMENTA SELECIONADA (TABLET): {tool_data['name']} ({tool_data['action']})")
+                self.itemSelected.emit("tool", tool_data)
+                self.hide()
+
+            elif level == "outside":
+                print("→ Clique fora do menu (TABLET), fechando")
+                self.hide()
+
+            event.accept()
+
+        # TabletMove - caneta se moveu
+        elif event.type() == QTabletEvent.Type.TabletMove:
+            pos = event.position()
+            x, y = int(pos.x()), int(pos.y())
+            level, data = self.detect_section(x, y)
+
+            if level != self.hover_level or data != self.hover_index:
+                print(f"→ Tablet move: ({x}, {y}) - seção: {level}, índice: {data}")
+                self.hover_level = level
+                self.hover_index = data
+                self.update()
+
+            event.accept()
+
+        # TabletRelease - caneta levantou
+        elif event.type() == QTabletEvent.Type.TabletRelease:
+            print("→ TABLET RELEASE (caneta levantou)")
+            self.tablet_pressed = False
+            event.accept()
+
+        else:
+            event.ignore()
 
     def keyPressEvent(self, event):
         """Processa eventos de teclado"""
