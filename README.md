@@ -3,7 +3,7 @@
 **Menu radial standalone para Xournal++** projetado para uso com stylus/mesa digitalizadora.
 
 ![Version](https://img.shields.io/badge/version-2.1.0-blue)
-![Python](https://img.shields.io/badge/python-3.8+-green)
+![Python](https://img.shields.io/badge/python-3.11+-green)
 ![License](https://img.shields.io/badge/license-GPL--2.0-red)
 
 ## 🎯 Por Que Python?
@@ -24,13 +24,13 @@ A versão anterior em Lua tinha limitações sérias:
 
 ## 🚀 Características
 
-### Menu Radial de 3 Níveis
+### Menu em Grade Simples e Eficiente
 
-- **Nível 1 (Centro):** Color picker HSV estilo Krita - Selecione qualquer cor do espectro
-- **Nível 2 (Anel Médio):** 16 cores predefinidas (grayscale + cores vibrantes)
-- **Nível 3 (Anel Externo):** 16 ferramentas (canetas, borracha, marca-texto, zoom, undo/redo, navegação, texto, imagem, régua)
-- **Hover highlighting:** Destaque visual da fatia sob o cursor
-- **Posição automática:** Menu aparece exatamente onde está a caneta
+- **16 cores predefinidas** em 2 linhas (grayscale + cores vibrantes)
+- **16 ferramentas** em 2 linhas (canetas, borracha, marca-texto, zoom, undo/redo, navegação, texto, imagem, régua)
+- **Interface simples:** Usa widgets padrão do PyQt6 (QPushButton + QGridLayout)
+- **Hover highlighting:** Destaque visual ao passar o mouse sobre os botões
+- **Posição automática:** Menu aparece exatamente onde está a caneta/cursor
 
 ### Captura de Eventos
 
@@ -64,7 +64,21 @@ chmod +x xournal-radial-menu-linux
 # Baixe xournal-radial-menu-macos e execute
 ```
 
-### Opção 2: Instalação via pip
+### Opção 2: Instalação via UV (Recomendado para Desenvolvimento)
+
+```bash
+# Instalar UV (se ainda não tiver)
+pip install uv
+
+# Clonar repositório
+git clone https://github.com/seu-usuario/xournal-radial-menu-py.git
+cd xournal-radial-menu-py
+
+# UV gerencia tudo automaticamente (venv + dependências)
+uv run python src/main.py
+```
+
+### Opção 3: Instalação via pip
 
 ```bash
 # Clonar repositório
@@ -77,13 +91,13 @@ source venv/bin/activate  # Linux/Mac
 # venv\Scripts\activate   # Windows
 
 # Instalar dependências
-pip install -r requirements.txt
+pip install -e .
 
 # Executar
 python src/main.py
 ```
 
-### Opção 3: Instalação como pacote
+### Opção 4: Instalação como pacote
 
 ```bash
 pip install xournal-radial-menu
@@ -175,8 +189,8 @@ self.color_shortcuts = {
 
 ### Requisitos
 
-- Python 3.8+
-- Kivy 2.3+
+- Python 3.11+ (recomendado 3.13 no Windows)
+- PyQt6
 - pynput
 - pyautogui
 
@@ -186,14 +200,18 @@ self.color_shortcuts = {
 xournal-radial-menu-py/
 ├── src/
 │   ├── main.py                 # Aplicação principal
-│   ├── radial_menu.py          # Widget do menu radial (Kivy)
-│   ├── stylus_handler.py       # Captura de eventos de stylus
-│   └── xournal_controller.py   # Controle do Xournal++
+│   ├── radial_menu.py          # Widget do menu em grade (PyQt6)
+│   ├── stylus_handler.py       # Captura de eventos de stylus/teclado
+│   └── xournal_controller.py   # Controle do Xournal++ via atalhos
+├── tests/                      # Suite de testes (88% cobertura)
+│   ├── test_pyqt6_api.py       # Valida APIs PyQt6 corretas
+│   ├── test_integration.py     # Testes de integração
+│   └── ...
 ├── .github/
 │   └── workflows/
 │       └── build.yml           # GitHub Actions (CI/CD)
-├── requirements.txt
-├── pyproject.toml
+├── pyproject.toml              # Configuração do projeto
+├── uv.lock                     # Lock file do UV
 └── README.md
 ```
 
@@ -278,8 +296,9 @@ Se não funcionar, é uma limitação do compositor de janelas. Tente:
 
 ## 📚 Tecnologias Usadas
 
-- **[Kivy](https://kivy.org/)** - Framework GUI cross-platform
-- **[pynput](https://pypi.org/project/pynput/)** - Captura de eventos de entrada
+- **[PyQt6](https://www.riverbankcomputing.com/software/pyqt/)** - Framework GUI cross-platform
+- **[UV](https://github.com/astral-sh/uv)** - Gerenciador de pacotes Python rápido (10-100x mais rápido que pip)
+- **[pynput](https://pypi.org/project/pynput/)** - Captura de eventos de entrada (teclado/mouse/stylus)
 - **[pyautogui](https://pypi.org/project/pyautogui/)** - Automação de teclado
 - **[PyInstaller](https://pyinstaller.org/)** - Empacotamento em executável
 - **[GitHub Actions](https://github.com/features/actions)** - CI/CD
