@@ -29,7 +29,7 @@ classifiers = [
 ]
 
 dependencies = [
-    "PyQt5>=5.15.0",
+    "PyQt5==5.15.2",
     "pynput>=1.7.6",
     "pyautogui>=0.9.54",
     "pyyaml>=6.0.1",
