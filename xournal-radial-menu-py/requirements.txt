@@ -1,0 +1,20 @@
+# Xournal++ Radial Menu - Python Dependencies
+
+# GUI Framework
+kivy>=2.3.0
+kivymd>=1.2.0
+
+# Input handling
+evdev>=1.7.0; sys_platform == 'linux'
+python-xlib>=0.33; sys_platform == 'linux'
+pynput>=1.7.6
+
+# Window automation
+pyautogui>=0.9.54
+pygetwindow>=0.0.9; sys_platform != 'darwin'
+
+# Configuration
+pyyaml>=6.0.1
+
+# Build tools (dev)
+pyinstaller>=6.0.0

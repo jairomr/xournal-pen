@@ -1,0 +1,68 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "xournal-radial-menu"
+version = "2.0.0"
+description = "Menu radial standalone para Xournal++ otimizado para stylus"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "GPL-2.0"}
+authors = [
+    {name = "Xournal Radial Menu Contributors"}
+]
+keywords = ["xournal", "stylus", "pen", "radial-menu", "pie-menu"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Multimedia :: Graphics",
+]
+
+dependencies = [
+    "kivy>=2.3.0",
+    "kivymd>=1.2.0",
+    "pynput>=1.7.6",
+    "pyautogui>=0.9.54",
+    "pyyaml>=6.0.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pyinstaller>=6.0.0",
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+]
+
+linux = [
+    "evdev>=1.7.0",
+    "python-xlib>=0.33",
+    "pygetwindow>=0.0.9",
+]
+
+[project.urls]
+Homepage = "https://github.com/seu-usuario/xournal-radial-menu"
+Repository = "https://github.com/seu-usuario/xournal-radial-menu"
+Issues = "https://github.com/seu-usuario/xournal-radial-menu/issues"
+
+[project.scripts]
+xournal-radial-menu = "src.main:main"
+
+[tool.setuptools]
+packages = ["src"]
+
+[tool.black]
+line-length = 100
+target-version = ['py38', 'py39', 'py310', 'py311']
+
+[tool.flake8]
+max-line-length = 100
+extend-ignore = ["E203", "W503"]
