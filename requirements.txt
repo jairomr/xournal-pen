@@ -1,8 +1,7 @@
 # Xournal++ Radial Menu - Python Dependencies
 
-# GUI Framework
-kivy>=2.3.0
-kivymd>=1.2.0
+# GUI Framework (PyQt5 - sem dependência de OpenGL, funciona em qualquer ambiente)
+PyQt5>=5.15.0
 
 # Input handling
 evdev>=1.7.0; sys_platform == 'linux'

@@ -1,21 +1,27 @@
 """
 Radial Menu Widget for Xournal++
-Menu radial visual usando Kivy com detecção de toque/hover
+Menu radial visual usando PyQt5 (sem dependência de OpenGL)
 """
 
-from kivy.uix.widget import Widget
-from kivy.graphics import Color, Ellipse, Line, Triangle
-from kivy.graphics.instructions import InstructionGroup
-from kivy.core.window import Window
-from kivy.core.text import Label as CoreLabel
+from PyQt5.QtWidgets import QWidget
+from PyQt5.QtCore import Qt, QPoint, QRect, pyqtSignal
+from PyQt5.QtGui import QPainter, QPen, QBrush, QColor, QFont, QPainterPath
 import math
 
 
-class RadialMenu(Widget):
-    """Widget de menu radial circular"""
+class RadialMenuWidget(QWidget):
+    """Widget de menu radial circular usando PyQt5"""
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    # Sinal emitido quando uma opção é selecionada
+    itemSelected = pyqtSignal(str, dict)  # (type, data)
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        # Configurar widget
+        self.setAttribute(Qt.WA_TranslucentBackground)
+        self.setAttribute(Qt.WA_NoSystemBackground)
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
 
         # Configuração do menu
         self.inner_radius = 60  # Raio interno (cores)
@@ -25,14 +31,14 @@ class RadialMenu(Widget):
 
         # Paleta de cores (círculo central)
         self.colors = [
-            {"name": "Preto", "rgb": (0, 0, 0)},
-            {"name": "Azul", "rgb": (0.2, 0.2, 0.8)},
-            {"name": "Vermelho", "rgb": (1, 0, 0)},
-            {"name": "Verde", "rgb": (0, 0.75, 0)},
-            {"name": "Laranja", "rgb": (1, 0.5, 0)},
-            {"name": "Amarelo", "rgb": (1, 1, 0)},
-            {"name": "Magenta", "rgb": (1, 0, 1)},
-            {"name": "Cinza", "rgb": (0.5, 0.5, 0.5)},
+            {"name": "Preto", "color": QColor(0, 0, 0)},
+            {"name": "Azul", "color": QColor(51, 51, 204)},
+            {"name": "Vermelho", "color": QColor(255, 0, 0)},
+            {"name": "Verde", "color": QColor(0, 192, 0)},
+            {"name": "Laranja", "color": QColor(255, 127, 0)},
+            {"name": "Amarelo", "color": QColor(255, 255, 0)},
+            {"name": "Magenta", "color": QColor(255, 0, 255)},
+            {"name": "Cinza", "color": QColor(128, 128, 128)},
         ]
 
         # Ferramentas (anel externo)
@@ -49,24 +55,23 @@ class RadialMenu(Widget):
             {"name": "Próxima Pág.", "action": "page_next"},
         ]
 
-        self.selected_section = None
-        self.selected_index = None
         self.hover_section = None
         self.hover_index = None
 
-        self.is_visible = False
+        # Tamanho do widget
+        size = self.outer_radius * 2 + 40
+        self.setFixedSize(size, size)
 
-    def show(self, x, y):
+    def show_at(self, x, y):
         """Mostra o menu na posição especificada"""
-        self.center_x = x
-        self.center_y = y
-        self.is_visible = True
-        self.draw_menu()
+        self.center_x = self.outer_radius + 20
+        self.center_y = self.outer_radius + 20
 
-    def hide(self):
-        """Esconde o menu"""
-        self.is_visible = False
-        self.canvas.clear()
+        # Posicionar janela
+        self.move(x - self.center_x, y - self.center_y)
+        self.show()
+        self.raise_()
+        self.activateWindow()
 
     def calculate_angle(self, x, y):
         """Calcula o ângulo de um ponto em relação ao centro"""
@@ -111,157 +116,151 @@ class RadialMenu(Widget):
         # Fora do menu
         return "outside", None
 
-    def on_hover(self, x, y):
-        """Atualiza highlight quando cursor passa sobre o menu"""
-        if not self.is_visible:
-            return
+    def mouseMoveEvent(self, event):
+        """Atualiza highlight quando mouse move"""
+        pos = event.pos()
+        section, index = self.detect_section(pos.x(), pos.y())
 
-        section, index = self.detect_section(x, y)
         if section != self.hover_section or index != self.hover_index:
             self.hover_section = section
             self.hover_index = index
-            self.draw_menu()
+            self.update()  # Redesenhar
 
-    def on_select(self, x, y):
-        """Processa seleção quando usuário clica/toca"""
-        if not self.is_visible:
-            return None
+    def mousePressEvent(self, event):
+        """Processa clique/toque"""
+        if event.button() == Qt.LeftButton:
+            pos = event.pos()
+            section, index = self.detect_section(pos.x(), pos.y())
 
-        section, index = self.detect_section(x, y)
+            if section == "color" and index is not None:
+                self.itemSelected.emit("color", self.colors[index])
+                self.hide()
+            elif section == "tool" and index is not None:
+                self.itemSelected.emit("tool", self.tools[index])
+                self.hide()
+            elif section == "outside":
+                self.hide()
 
-        if section == "color" and index is not None:
-            return {"type": "color", "data": self.colors[index]}
-        elif section == "tool" and index is not None:
-            return {"type": "tool", "data": self.tools[index]}
+    def paintEvent(self, event):
+        """Desenha o menu radial"""
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
 
-        return None
+        cx = self.center_x
+        cy = self.center_y
 
-    def draw_menu(self):
-        """Desenha o menu radial completo"""
-        self.canvas.clear()
+        # 1. Fundo semi-transparente
+        painter.setBrush(QBrush(QColor(0, 0, 0, 100)))
+        painter.setPen(Qt.NoPen)
+        painter.drawEllipse(QPoint(cx, cy), self.outer_radius, self.outer_radius)
 
-        if not self.is_visible:
-            return
+        # 2. Desenhar fatias de cores (círculo central)
+        color_angle = 360 / len(self.colors)
+        for i, color_data in enumerate(self.colors):
+            start_angle = i * color_angle * 16  # Qt usa 1/16 de grau
+            span_angle = color_angle * 16
 
-        with self.canvas:
-            # 1. Fundo semi-transparente
-            Color(0, 0, 0, 0.3)
-            Ellipse(
-                pos=(self.center_x - self.outer_radius,
-                     self.center_y - self.outer_radius),
-                size=(self.outer_radius * 2, self.outer_radius * 2)
+            # Highlight se hover
+            color = color_data["color"]
+            if self.hover_section == "color" and self.hover_index == i:
+                color = color.lighter(120)
+
+            painter.setBrush(QBrush(color))
+            painter.setPen(QPen(Qt.black, 2))
+
+            # Desenhar fatia circular (pie)
+            rect = QRect(
+                cx - self.inner_radius,
+                cy - self.inner_radius,
+                self.inner_radius * 2,
+                self.inner_radius * 2
             )
+            painter.drawPie(rect, int(start_angle), int(span_angle))
 
-            # 2. Desenhar fatias de cores (círculo central)
-            color_angle = (2 * math.pi) / len(self.colors)
-            for i, color_data in enumerate(self.colors):
-                start_angle = i * color_angle
-                end_angle = (i + 1) * color_angle
+        # 3. Círculo divisor
+        painter.setBrush(Qt.NoBrush)
+        painter.setPen(QPen(Qt.black, 3))
+        painter.drawEllipse(QPoint(cx, cy), self.inner_radius, self.inner_radius)
 
-                # Highlight se hover
-                alpha = 1.0 if (self.hover_section == "color" and self.hover_index == i) else 0.8
+        # 4. Desenhar fatias de ferramentas (anel externo)
+        tool_angle = 360 / len(self.tools)
+        for i, tool_data in enumerate(self.tools):
+            start_angle_deg = i * tool_angle
+            end_angle_deg = (i + 1) * tool_angle
 
-                Color(color_data["rgb"][0], color_data["rgb"][1], color_data["rgb"][2], alpha)
+            start_angle_rad = math.radians(start_angle_deg)
+            end_angle_rad = math.radians(end_angle_deg)
 
-                # Desenhar fatia usando polígono
-                self._draw_slice(
-                    self.center_x, self.center_y,
-                    0, self.inner_radius,
-                    start_angle, end_angle
-                )
+            # Cor de fundo
+            if self.hover_section == "tool" and self.hover_index == i:
+                bg_color = QColor(100, 150, 255, 230)  # Azul claro (highlight)
+            elif i % 2 == 0:
+                bg_color = QColor(230, 230, 230, 230)
+            else:
+                bg_color = QColor(210, 210, 210, 230)
 
-                # Linha divisória
-                Color(0, 0, 0, 0.5)
-                end_x = self.center_x + self.inner_radius * math.cos(start_angle)
-                end_y = self.center_y + self.inner_radius * math.sin(start_angle)
-                Line(points=[self.center_x, self.center_y, end_x, end_y], width=1)
+            # Criar polígono da fatia
+            path = QPainterPath()
+            path.moveTo(cx, cy)
 
-            # 3. Círculo divisor
-            Color(0, 0, 0, 1)
-            Line(
-                circle=(self.center_x, self.center_y, self.inner_radius),
-                width=2
-            )
-
-            # 4. Desenhar fatias de ferramentas (anel externo)
-            tool_angle = (2 * math.pi) / len(self.tools)
-            for i, tool_data in enumerate(self.tools):
-                start_angle = i * tool_angle
-                end_angle = (i + 1) * tool_angle
-
-                # Alternar cores de fundo
-                if self.hover_section == "tool" and self.hover_index == i:
-                    Color(0.3, 0.6, 1.0, 0.9)  # Azul claro (highlight)
-                elif i % 2 == 0:
-                    Color(0.9, 0.9, 0.9, 0.9)
+            # Arco interno
+            for angle_deg in range(int(start_angle_deg), int(end_angle_deg) + 1, 5):
+                angle_rad = math.radians(angle_deg)
+                x = cx + self.inner_radius * math.cos(angle_rad)
+                y = cy + self.inner_radius * math.sin(angle_rad)
+                if angle_deg == int(start_angle_deg):
+                    path.lineTo(x, y)
                 else:
-                    Color(0.85, 0.85, 0.85, 0.9)
+                    path.lineTo(x, y)
 
-                self._draw_slice(
-                    self.center_x, self.center_y,
-                    self.inner_radius, self.outer_radius,
-                    start_angle, end_angle
-                )
+            # Linha até raio externo
+            x_outer = cx + self.outer_radius * math.cos(end_angle_rad)
+            y_outer = cy + self.outer_radius * math.sin(end_angle_rad)
+            path.lineTo(x_outer, y_outer)
 
-                # Linha divisória
-                Color(0, 0, 0, 0.5)
-                inner_x = self.center_x + self.inner_radius * math.cos(start_angle)
-                inner_y = self.center_y + self.inner_radius * math.sin(start_angle)
-                outer_x = self.center_x + self.outer_radius * math.cos(start_angle)
-                outer_y = self.center_y + self.outer_radius * math.sin(start_angle)
-                Line(points=[inner_x, inner_y, outer_x, outer_y], width=1)
+            # Arco externo (reverso)
+            for angle_deg in range(int(end_angle_deg), int(start_angle_deg) - 1, -5):
+                angle_rad = math.radians(angle_deg)
+                x = cx + self.outer_radius * math.cos(angle_rad)
+                y = cy + self.outer_radius * math.sin(angle_rad)
+                path.lineTo(x, y)
 
-                # Desenhar label da ferramenta
-                mid_angle = (start_angle + end_angle) / 2
-                label_radius = (self.inner_radius + self.outer_radius) / 2
-                label_x = self.center_x + label_radius * math.cos(mid_angle)
-                label_y = self.center_y + label_radius * math.sin(mid_angle)
+            # Fechar caminho
+            path.closeSubpath()
 
-                self._draw_text(tool_data["name"][:10], label_x, label_y, 12)
+            painter.setBrush(QBrush(bg_color))
+            painter.setPen(QPen(Qt.black, 1))
+            painter.drawPath(path)
 
-            # 5. Círculo externo
-            Color(0, 0, 0, 1)
-            Line(
-                circle=(self.center_x, self.center_y, self.outer_radius),
-                width=3
-            )
+            # Desenhar label da ferramenta
+            mid_angle_deg = (start_angle_deg + end_angle_deg) / 2
+            mid_angle_rad = math.radians(mid_angle_deg)
+            label_radius = (self.inner_radius + self.outer_radius) / 2
+            label_x = cx + label_radius * math.cos(mid_angle_rad)
+            label_y = cy + label_radius * math.sin(mid_angle_rad)
 
-            # 6. Label central
-            self._draw_text("COR", self.center_x, self.center_y, 16, (1, 1, 1))
+            painter.setPen(QPen(Qt.black))
+            font = QFont("Sans", 9, QFont.Bold)
+            painter.setFont(font)
 
-    def _draw_slice(self, cx, cy, inner_r, outer_r, start_angle, end_angle):
-        """Desenha uma fatia do menu (seção entre dois ângulos)"""
-        points = []
+            # Desenhar texto centralizado
+            text = tool_data["name"][:12]
+            text_rect = painter.fontMetrics().boundingRect(text)
+            text_x = label_x - text_rect.width() / 2
+            text_y = label_y + text_rect.height() / 4
+            painter.drawText(int(text_x), int(text_y), text)
 
-        # Arco interno
-        steps = 20
-        for i in range(steps + 1):
-            angle = start_angle + (end_angle - start_angle) * i / steps
-            x = cx + inner_r * math.cos(angle)
-            y = cy + inner_r * math.sin(angle)
-            points.extend([x, y])
+        # 5. Círculo externo
+        painter.setBrush(Qt.NoBrush)
+        painter.setPen(QPen(Qt.black, 4))
+        painter.drawEllipse(QPoint(cx, cy), self.outer_radius, self.outer_radius)
 
-        # Arco externo (reverso)
-        for i in range(steps + 1):
-            angle = end_angle - (end_angle - start_angle) * i / steps
-            x = cx + outer_r * math.cos(angle)
-            y = cy + outer_r * math.sin(angle)
-            points.extend([x, y])
-
-        # Fechar polígono
-        if len(points) > 0:
-            Line(points=points + points[:2], close=True, width=1)
-
-    def _draw_text(self, text, x, y, size=14, color=(0, 0, 0)):
-        """Desenha texto na posição especificada"""
-        label = CoreLabel(text=text, font_size=size)
-        label.refresh()
-        texture = label.texture
-
-        Color(*color, 1)
-        from kivy.graphics import Rectangle
-        Rectangle(
-            texture=texture,
-            pos=(x - texture.width / 2, y - texture.height / 2),
-            size=texture.size
-        )
+        # 6. Label central
+        painter.setPen(QPen(Qt.white))
+        font = QFont("Sans", 12, QFont.Bold)
+        painter.setFont(font)
+        text = "COR"
+        text_rect = painter.fontMetrics().boundingRect(text)
+        text_x = cx - text_rect.width() / 2
+        text_y = cy + text_rect.height() / 4
+        painter.drawText(int(text_x), int(text_y), text)

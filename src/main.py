@@ -1,160 +1,88 @@
 """
 Xournal++ Radial Menu - Aplicação Principal
-Menu radial standalone para stylus
+Menu radial standalone para stylus usando PyQt5
 """
 
-from kivy.app import App
-from kivy.uix.floatlayout import FloatLayout
-from kivy.core.window import Window
-from kivy.clock import Clock
 import sys
-import os
+from PyQt5.QtWidgets import QApplication
+from PyQt5.QtCore import QTimer
 
-# Adicionar src ao path
-sys.path.insert(0, os.path.dirname(__file__))
-
-from radial_menu import RadialMenu
+from radial_menu import RadialMenuWidget
 from stylus_handler import StylusHandler
 from xournal_controller import XournalController
 
 
-class RadialMenuApp(App):
+class RadialMenuApp:
     """Aplicação principal do menu radial"""
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-        self.menu = None
-        self.stylus_handler = None
-        self.xournal_controller = None
-        self.root_layout = None
-
-        self.menu_open = False
-
-    def build(self):
-        """Constrói a interface da aplicação"""
-        # Configurar janela
-        Window.clearcolor = (0, 0, 0, 0)  # Transparente
-        Window.fullscreen = False
-        Window.borderless = True  # Sem bordas
-        Window.always_on_top = True  # Sempre no topo
-        Window.size = (Window.system_size[0], Window.system_size[1])
-
-        # Layout principal
-        self.root_layout = FloatLayout()
-
-        # Criar menu radial
-        self.menu = RadialMenu()
-        self.root_layout.add_widget(self.menu)
-
-        # Bind eventos do mouse na janela
-        Window.bind(on_motion=self.on_motion)
-        Window.bind(on_touch_down=self.on_touch_down)
-
-        # Inicializar componentes
+    def __init__(self):
+        self.app = QApplication(sys.argv)
+        self.menu = RadialMenuWidget()
+        self.stylus_handler = StylusHandler(
+            on_button_press=self.on_stylus_button
+        )
         self.xournal_controller = XournalController()
 
-        self.stylus_handler = StylusHandler(
-            on_button_press=self.on_stylus_button,
-            on_move=self.on_stylus_move
-        )
+        # Conectar sinal de seleção
+        self.menu.itemSelected.connect(self.on_item_selected)
+
+        # Iniciar captura de stylus
         self.stylus_handler.start()
 
-        print("RadialMenuApp: Aplicação iniciada")
+        print("="*60)
+        print("Xournal++ Radial Menu v2.0 - Python/PyQt5 Edition")
+        print("="*60)
+        print()
+        print("✓ Aplicação iniciada")
         print("  - Pressione botão lateral da stylus ou Alt+R para abrir menu")
         print("  - ESC para fechar menu")
         print("  - Ctrl+Q para sair da aplicação")
-
-        return self.root_layout
-
-    def on_motion(self, window, etype, motion_event):
-        """Callback quando mouse/stylus move"""
-        if self.menu_open and self.menu:
-            # Converter coordenadas da janela para coordenadas do widget
-            x, y = motion_event.pos
-            self.menu.on_hover(x, y)
-
-    def on_touch_down(self, window, touch):
-        """Callback quando tela é tocada/clicada"""
-        if self.menu_open and self.menu:
-            x, y = touch.pos
-
-            # Processar seleção
-            result = self.menu.on_select(x, y)
-
-            if result:
-                print(f"RadialMenuApp: Selecionado {result['type']}: {result['data']}")
-
-                # Executar ação no Xournal++
-                self.xournal_controller.execute_action(
-                    result['type'],
-                    result['data']
-                )
-
-                # Fechar menu
-                self.toggle_menu()
-
-        return True
+        print()
 
     def on_stylus_button(self, x, y):
         """Callback quando botão da stylus é pressionado"""
-        print(f"RadialMenuApp: Botão stylus em ({x}, {y})")
-        self.toggle_menu(x, y)
+        print(f"→ Botão stylus detectado em ({x}, {y})")
 
-    def on_stylus_move(self, x, y):
-        """Callback quando stylus move"""
-        if self.menu_open and self.menu:
-            self.menu.on_hover(x, y)
-
-    def toggle_menu(self, x=None, y=None):
-        """Abre/fecha o menu"""
-        if self.menu_open:
-            # Fechar menu
-            print("RadialMenuApp: Fechando menu")
+        if self.menu.isVisible():
+            print("→ Fechando menu")
             self.menu.hide()
-            self.menu_open = False
-
-            # Esconder janela
-            Window.hide()
-
         else:
-            # Abrir menu
-            if x is None or y is None:
-                x, y = self.stylus_handler.get_cursor_position()
+            print(f"→ Abrindo menu em ({x}, {y})")
+            self.menu.show_at(x, y)
 
-            print(f"RadialMenuApp: Abrindo menu em ({x}, {y})")
+    def on_item_selected(self, item_type, item_data):
+        """Callback quando item é selecionado"""
+        print(f"→ Selecionado {item_type}: {item_data}")
 
-            # Mostrar janela
-            Window.show()
+        # Executar ação no Xournal++
+        self.xournal_controller.execute_action(item_type, item_data)
 
-            # Abrir menu
-            self.menu.show(x, y)
-            self.menu_open = True
+    def run(self):
+        """Executa a aplicação"""
+        # Timer para processar eventos periodicamente
+        self.timer = QTimer()
+        self.timer.timeout.connect(lambda: None)  # Apenas mantém o loop ativo
+        self.timer.start(100)
 
-    def on_request_close(self, *args):
-        """Callback quando aplicação é fechada"""
-        print("RadialMenuApp: Fechando aplicação")
+        return self.app.exec_()
 
-        if self.stylus_handler:
-            self.stylus_handler.stop()
-
-        return False  # Permitir fechar
-
-    def on_stop(self):
-        """Chamado quando aplicação para"""
+    def cleanup(self):
+        """Limpeza ao sair"""
+        print("\n→ Encerrando aplicação...")
         if self.stylus_handler:
             self.stylus_handler.stop()
 
 
 def main():
     """Função principal"""
-    print("=" * 60)
-    print("Xournal++ Radial Menu v2.0 - Python Edition")
-    print("=" * 60)
-    print()
-
     app = RadialMenuApp()
-    app.run()
+
+    try:
+        exit_code = app.run()
+    finally:
+        app.cleanup()
+
+    sys.exit(exit_code)
 
 
 if __name__ == "__main__":
