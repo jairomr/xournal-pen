@@ -86,8 +86,18 @@ class RadialMenuWidget(QWidget):
         self.center_x = self.tools_outer + 20
         self.center_y = self.tools_outer + 20
 
+        # Calcular posição da janela
+        window_x = x - self.center_x
+        window_y = y - self.center_y
+
+        print(f"RadialMenu.show_at():")
+        print(f"  → Posição do cursor: ({x}, {y})")
+        print(f"  → Centro do menu: ({self.center_x}, {self.center_y})")
+        print(f"  → Posição da janela: ({window_x}, {window_y})")
+        print(f"  → Tamanho da janela: {self.width()}x{self.height()}")
+
         # Posicionar janela
-        self.move(x - self.center_x, y - self.center_y)
+        self.move(window_x, window_y)
         self.show()
         self.raise_()
         self.activateWindow()
@@ -163,7 +173,9 @@ class RadialMenuWidget(QWidget):
         """Processa clique/toque"""
         if event.button() == Qt.MouseButton.LeftButton:
             pos = event.pos()
+            print(f"→ Clique detectado em ({pos.x()}, {pos.y()})")
             level, data = self.detect_section(pos.x(), pos.y())
+            print(f"→ Seção detectada: {level}, índice: {data}")
 
             if level == "picker" and data is not None:
                 # Seleção de cor do HSV picker
@@ -174,20 +186,26 @@ class RadialMenuWidget(QWidget):
                 value = 1.0  # Sempre valor máximo (brilho)
 
                 color = self.hsv_to_qcolor(hue, saturation, value)
+                print(f"→ COR PICKER SELECIONADA: RGB({color.red()}, {color.green()}, {color.blue()})")
                 self.itemSelected.emit("color", {"name": "Custom", "color": color})
                 self.hide()
 
             elif level == "color" and data is not None:
                 # Seleção de cor predefinida
-                self.itemSelected.emit("color", self.colors[data])
+                color_data = self.colors[data]
+                print(f"→ COR SELECIONADA: {color_data['name']}")
+                self.itemSelected.emit("color", color_data)
                 self.hide()
 
             elif level == "tool" and data is not None:
                 # Seleção de ferramenta
-                self.itemSelected.emit("tool", self.tools[data])
+                tool_data = self.tools[data]
+                print(f"→ FERRAMENTA SELECIONADA: {tool_data['name']} ({tool_data['action']})")
+                self.itemSelected.emit("tool", tool_data)
                 self.hide()
 
             elif level == "outside":
+                print("→ Clique fora do menu, fechando")
                 self.hide()
 
     def keyPressEvent(self, event):

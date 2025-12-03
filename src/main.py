@@ -42,14 +42,18 @@ class RadialMenuApp:
 
     def on_stylus_button(self, x, y):
         """Callback quando Alt+R é pressionado"""
-        print(f"→ Alt+R detectado em ({x}, {y})")
+        print()
+        print("=" * 60)
+        print(f"CALLBACK: Alt+R detectado em ({x}, {y})")
+        print("=" * 60)
 
         if self.menu.isVisible():
-            print("→ Fechando menu")
+            print("→ Menu já está visível, fechando...")
             self.menu.hide()
         else:
-            print(f"→ Abrindo menu em ({x}, {y})")
+            print(f"→ Menu não está visível, abrindo em ({x}, {y})...")
             self.menu.show_at(x, y)
+        print()
 
     def on_item_selected(self, item_type, item_data):
         """Callback quando item é selecionado"""

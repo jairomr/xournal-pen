@@ -87,8 +87,11 @@ class StylusHandler:
                     mouse_controller = mouse.Controller()
                     pos = mouse_controller.position
                     self.current_x, self.current_y = pos
-                    print(f"StylusHandler: Alt+R detectado em ({self.current_x}, {self.current_y})")
+                    print(f"StylusHandler: Alt+R detectado")
+                    print(f"  → Posição do cursor/pen: ({self.current_x}, {self.current_y})")
+                    print(f"  → Callback definido: {self.on_button_press is not None}")
                     if self.on_button_press:
+                        print(f"  → Chamando callback com posição ({self.current_x}, {self.current_y})")
                         self.on_button_press(self.current_x, self.current_y)
         except AttributeError:
             pass
