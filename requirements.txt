@@ -1,7 +1,9 @@
 # Xournal++ Radial Menu - Python Dependencies
 
 # GUI Framework (PyQt5 - sem dependência de OpenGL, funciona em qualquer ambiente)
-PyQt5>=5.15.0
+# Nota: PyQt5 5.15.2 é a última versão estável com wheels para todas as plataformas
+# Versões mais recentes (5.15.9+) têm problemas com wheels no Windows
+PyQt5==5.15.2
 
 # Input handling
 evdev>=1.7.0; sys_platform == 'linux'
