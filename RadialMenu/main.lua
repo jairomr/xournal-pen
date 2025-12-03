@@ -380,10 +380,6 @@ end
 -- Obtém posição atual do cursor (aproximação)
 -- Como a API não fornece posição do cursor, usa centro da viewport
 function getCurrentCursorPosition()
-    -- Obter dimensões da página atual
-    local doc = app.getDocumentStructure()
-    local zoom = app.getZoom()
-
     -- Posição aproximada no centro da tela visível
     -- Em uma implementação real com eventos de stylus, usaríamos a posição real
     -- WORKAROUND: Desenha o menu no centro da página
