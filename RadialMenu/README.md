@@ -162,15 +162,17 @@ selectColor(2)  -- Azul
 selectColor(3)  -- Vermelho
 -- ... e assim por diante
 
--- Selecionar ferramenta (1-8)
+-- Selecionar ferramenta (1-10)
 selectTool(1)   -- Caneta Fina
 selectTool(2)   -- Caneta Média
-selectTool(3)   -- Caneta Grossa
-selectTool(4)   -- Marca-Texto
-selectTool(5)   -- Borracha
-selectTool(6)   -- Seleção
-selectTool(7)   -- Página Anterior
-selectTool(8)   -- Próxima Página
+selectTool(3)   -- Marca-Texto
+selectTool(4)   -- Borracha
+selectTool(5)   -- Seleção
+selectTool(6)   -- Mão
+selectTool(7)   -- Zoom In
+selectTool(8)   -- Zoom Out
+selectTool(9)   -- Página Anterior
+selectTool(10)  -- Próxima Página
 
 -- Fechar menu
 closeRadialMenu()
@@ -191,16 +193,18 @@ O círculo central contém 8 cores:
 
 ## 🛠️ Ferramentas do Anel Externo
 
-O anel externo contém 8 ferramentas:
+O anel externo contém 10 ferramentas:
 
 1. **Caneta Fina** - Muda para caneta com espessura fina
 2. **Caneta Média** - Muda para caneta com espessura média
-3. **Caneta Grossa** - Muda para caneta com espessura grossa
-4. **Marca-Texto** - Muda para marca-texto
-5. **Borracha** - Muda para ferramenta de borracha
-6. **Seleção** - Muda para ferramenta de seleção retangular
-7. **Página Anterior** - Navega para página anterior
-8. **Próxima Página** - Navega para próxima página
+3. **Marca-Texto** - Muda para marca-texto
+4. **Borracha** - Muda para ferramenta de borracha
+5. **Seleção** - Muda para ferramenta de seleção retangular
+6. **Mão** - Ferramenta de mão para navegar/arrastar a página
+7. **Zoom In** - Aumenta o zoom
+8. **Zoom Out** - Diminui o zoom
+9. **Página Anterior** - Navega para página anterior
+10. **Próxima Página** - Navega para próxima página
 
 ## ⚙️ Personalização
 

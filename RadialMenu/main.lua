@@ -60,13 +60,6 @@ ToolRing = {
         end
     },
     {
-        name = "Caneta Grossa",
-        action = function()
-            app.uiAction({["action"] = "ACTION_TOOL_PEN"})
-            app.uiAction({["action"] = "ACTION_SIZE_THICK"})
-        end
-    },
-    {
         name = "Marca-Texto",
         action = function()
             app.uiAction({["action"] = "ACTION_TOOL_HIGHLIGHTER"})
@@ -85,13 +78,31 @@ ToolRing = {
         end
     },
     {
-        name = "Página Anterior",
+        name = "Mão",
+        action = function()
+            app.uiAction({["action"] = "ACTION_TOOL_HAND"})
+        end
+    },
+    {
+        name = "Zoom In",
+        action = function()
+            app.uiAction({["action"] = "ACTION_ZOOM_IN"})
+        end
+    },
+    {
+        name = "Zoom Out",
+        action = function()
+            app.uiAction({["action"] = "ACTION_ZOOM_OUT"})
+        end
+    },
+    {
+        name = "Pág. Anterior",
         action = function()
             app.uiAction({["action"] = "ACTION_GOTO_BACK"})
         end
     },
     {
-        name = "Próxima Página",
+        name = "Próxima Pág.",
         action = function()
             app.uiAction({["action"] = "ACTION_GOTO_NEXT"})
         end

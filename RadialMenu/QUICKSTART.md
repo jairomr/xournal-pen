@@ -68,11 +68,13 @@ selectColor(1)  -- Preto
 selectColor(2)  -- Azul
 selectColor(3)  -- Vermelho
 
--- Selecionar ferramenta (1-8)
+-- Selecionar ferramenta (1-10)
 selectTool(1)  -- Caneta Fina
-selectTool(4)  -- Marca-Texto
-selectTool(5)  -- Borracha
-selectTool(8)  -- Próxima Página
+selectTool(3)  -- Marca-Texto
+selectTool(4)  -- Borracha
+selectTool(6)  -- Mão
+selectTool(7)  -- Zoom In
+selectTool(10) -- Próxima Página
 ```
 
 ---
@@ -98,12 +100,14 @@ selectTool(8)  -- Próxima Página
 |---------|---------------------|
 | 1       | Caneta Fina         |
 | 2       | Caneta Média        |
-| 3       | Caneta Grossa       |
-| 4       | Marca-Texto         |
-| 5       | Borracha            |
-| 6       | Seleção             |
-| 7       | Página Anterior     |
-| 8       | Próxima Página      |
+| 3       | Marca-Texto         |
+| 4       | Borracha            |
+| 5       | Seleção             |
+| 6       | Mão                 |
+| 7       | Zoom In             |
+| 8       | Zoom Out            |
+| 9       | Página Anterior     |
+| 10      | Próxima Página      |
 
 ---
 

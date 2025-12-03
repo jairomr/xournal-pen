@@ -24,7 +24,7 @@ Criar um **plugin de menu radial (pie menu)** para Xournal++ otimizado para uso 
 
 ✅ **Menu Circular Completo**
 - Círculo central com 8 cores
-- Anel externo com 8 ferramentas
+- Anel externo com 10 ferramentas (incluindo zoom e mão)
 - Geometria calculada automaticamente
 
 ✅ **Sistema de Detecção de Ângulo**
@@ -267,7 +267,7 @@ app.changeToolColor({color = 0xRRGGBB})  -- Mudar cor
 
 - [x] Menu radial visual completo
 - [x] Paleta de 8 cores
-- [x] 8 ferramentas configuráveis
+- [x] 10 ferramentas configuráveis (incluindo zoom e mão)
 - [x] Geometria e cálculo de ângulos
 - [x] Integração com APIs do Xournal++
 - [x] Atalho de teclado
@@ -311,7 +311,7 @@ app.changeToolColor({color = 0xRRGGBB})  -- Mudar cor
    - [ ] `Alt+R` abre o menu
    - [ ] Menu é desenhado corretamente
    - [ ] Todas as 8 cores visíveis
-   - [ ] Todas as 8 ferramentas visíveis
+   - [ ] Todas as 10 ferramentas visíveis
 
 3. **Fechamento do Menu**
    - [ ] `Alt+R` fecha o menu
