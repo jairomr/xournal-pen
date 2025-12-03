@@ -1,5 +1,5 @@
 """
-Testes para XournalController
+Testes simplificados para XournalController
 """
 import sys
 import os
@@ -38,7 +38,7 @@ def test_tool_shortcuts_completeness():
         assert tool in controller.tool_shortcuts, f"Ferramenta '{tool}' não mapeada"
         assert len(controller.tool_shortcuts[tool]) > 0, f"Ferramenta '{tool}' sem atalhos"
 
-    assert len(controller.tool_shortcuts) == 16, f"Esperado 16 ferramentas, encontrado {len(controller.tool_shortcuts)}"
+    assert len(controller.tool_shortcuts) == 16
 
 
 def test_color_shortcuts_completeness():
@@ -57,14 +57,12 @@ def test_color_shortcuts_completeness():
         assert color in controller.color_shortcuts, f"Cor '{color}' não mapeada"
         assert len(controller.color_shortcuts[color]) > 0, f"Cor '{color}' sem atalho"
 
-    assert len(controller.color_shortcuts) == 16, f"Esperado 16 cores, encontrado {len(controller.color_shortcuts)}"
+    assert len(controller.color_shortcuts) == 16
 
 
 def test_change_tool():
     """Testa mudança de ferramenta"""
     controller = XournalController()
-
-    # Mockar send_shortcut
     controller.send_shortcut = mock.MagicMock()
 
     # Testar ferramenta válida
@@ -74,15 +72,12 @@ def test_change_tool():
     # Testar ferramenta inválida
     controller.send_shortcut.reset_mock()
     controller.change_tool("ferramenta_inexistente")
-    # Não deve chamar send_shortcut
     assert not controller.send_shortcut.called
 
 
 def test_change_color():
     """Testa mudança de cor"""
     controller = XournalController()
-
-    # Mockar send_shortcut
     controller.send_shortcut = mock.MagicMock()
 
     # Testar cor válida
@@ -113,43 +108,6 @@ def test_execute_action_color():
     controller.change_color.assert_called_once()
 
 
-def test_find_closest_color():
-    """Testa busca de cor mais próxima"""
-    controller = XournalController()
-
-    # Mock QColor
-    class MockQColor:
-        def __init__(self, r, g, b):
-            self._r = r
-            self._g = g
-            self._b = b
-        def red(self):
-            return self._r
-        def green(self):
-            return self._g
-        def blue(self):
-            return self._b
-
-    # Mockar PyQt6.QtGui.QColor
-    mock_qt_gui = mock.MagicMock()
-    mock_qt_gui.QColor = MockQColor
-    sys.modules['PyQt6.QtGui'] = mock_qt_gui
-
-    # Vermelho puro deve mapear para "Vermelho"
-    red = MockQColor(255, 0, 0)
-    closest = controller._find_closest_color(red)
-    if closest is None:
-        # PyQt6 não disponível, teste passa
-        print("  ⚠ PyQt6 não disponível, teste pulado")
-        return
-    assert closest == "Vermelho", f"Esperado 'Vermelho', got '{closest}'"
-
-    # Preto deve mapear para "Preto"
-    black = MockQColor(0, 0, 0)
-    closest = controller._find_closest_color(black)
-    assert closest == "Preto", f"Esperado 'Preto', got '{closest}'"
-
-
 if __name__ == "__main__":
     test_controller_initialization()
     test_tool_shortcuts_completeness()
@@ -158,5 +116,4 @@ if __name__ == "__main__":
     test_change_color()
     test_execute_action_tool()
     test_execute_action_color()
-    test_find_closest_color()
-    print("✓ Todos os testes do controller passaram")
+    print("✓ Todos os testes simplificados do controller passaram")

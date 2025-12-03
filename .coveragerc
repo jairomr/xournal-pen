@@ -1,0 +1,26 @@
+[run]
+source = src
+omit =
+    src/_version.py
+    src/main.py
+    src/radial_menu.py
+    src/__init__.py
+
+[report]
+# Ignora código GUI que não pode ser testado sem display
+omit =
+    src/_version.py
+    src/main.py
+    src/radial_menu.py
+    src/__init__.py
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    raise AssertionError
+    raise NotImplementedError
+    if __name__ == .__main__.:
+    if TYPE_CHECKING:
+    @abstract
+
+[html]
+directory = htmlcov
