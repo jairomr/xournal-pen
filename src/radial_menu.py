@@ -19,16 +19,14 @@ class RadialMenuWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        # Configurar widget
-        # REMOVIDO: WA_NoSystemBackground - impede captura de eventos!
+        # Configurar widget - TRANSPARENTE mas captura eventos
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        # NÃO usar WA_NoSystemBackground - isso impedia captura de eventos
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.Tool)
 
         # Habilitar tracking de mouse e aceitar foco
         self.setMouseTracking(True)
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
-
-        # CRÍTICO: Aceitar eventos de mouse
-        self.setAttribute(Qt.WidgetAttribute.WA_AcceptTouchEvents, False)  # Forçar eventos de mouse
 
         # Habilitar eventos de tablet (caneta digital/mesa digitalizadora)
         self.setAttribute(Qt.WidgetAttribute.WA_TabletTracking)
@@ -176,28 +174,6 @@ class RadialMenuWidget(QWidget):
 
         # Fora do menu
         return "outside", None
-
-    def event(self, event):
-        """Intercepta TODOS os eventos para debug"""
-        event_type = event.type()
-
-        # Log apenas eventos importantes
-        important_events = [
-            3,   # MouseButtonPress
-            4,   # MouseButtonRelease
-            5,   # MouseButtonDblClick
-            2,   # MouseMove
-            10,  # Enter
-            11,  # Leave
-            87,  # TabletPress
-            88,  # TabletMove
-            89,  # TabletRelease
-        ]
-
-        if int(event_type) in important_events:
-            print(f"→ EVENT: {event_type} ({int(event_type)})")
-
-        return super().event(event)
 
     def enterEvent(self, event):
         """Mouse entrou no widget"""
@@ -353,12 +329,8 @@ class RadialMenuWidget(QWidget):
         cy = self.center_y
         black = QColor(0, 0, 0)
 
-        # 0. Fundo da janela inteira (CRÍTICO para capturar eventos)
-        # Retângulo semi-transparente cobrindo toda a janela
-        painter.fillRect(self.rect(), QColor(0, 0, 0, 1))  # Quase invisível mas captura eventos
-
         # 1. Fundo semi-transparente do menu
-        painter.setBrush(QBrush(QColor(0, 0, 0, 120)))  # Mais opaco para ver melhor
+        painter.setBrush(QBrush(QColor(0, 0, 0, 150)))
         painter.setPen(Qt.PenStyle.NoPen)
         painter.drawEllipse(QPoint(cx, cy), self.tools_outer, self.tools_outer)
 
