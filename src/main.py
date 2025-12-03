@@ -1,93 +1,41 @@
-"""
-Xournal++ Radial Menu - Aplicação Principal
-Menu radial standalone para stylus usando PyQt6
-"""
-
+"""Aplicação principal"""
 import sys
 from PyQt6.QtWidgets import QApplication
-from PyQt6.QtCore import QTimer
-
-from radial_menu import RadialMenuWidget
-from stylus_handler import StylusHandler
-from xournal_controller import XournalController
-from _version import __version__
-
-
-class RadialMenuApp:
-    """Aplicação principal do menu radial"""
-
-    def __init__(self):
-        self.app = QApplication(sys.argv)
-        self.menu = RadialMenuWidget()
-        self.stylus_handler = StylusHandler(
-            on_button_press=self.on_stylus_button
-        )
-        self.xournal_controller = XournalController()
-
-        # Conectar sinal de seleção
-        self.menu.itemSelected.connect(self.on_item_selected)
-
-        # Iniciar captura de stylus
-        self.stylus_handler.start()
-
-        print("="*60)
-        print(f"Xournal++ Radial Menu v{__version__} - Python/PyQt6 Edition")
-        print("="*60)
-        print()
-        print("✓ Aplicação iniciada")
-        print("  - Pressione Alt+R para abrir menu radial")
-        print("  - ESC para fechar menu")
-        print("  - Ctrl+Q para sair da aplicação")
-        print()
-
-    def on_stylus_button(self, x, y):
-        """Callback quando Alt+R é pressionado"""
-        print()
-        print("=" * 60)
-        print(f"CALLBACK: Alt+R detectado em ({x}, {y})")
-        print("=" * 60)
-
-        if self.menu.isVisible():
-            print("→ Menu já está visível, fechando...")
-            self.menu.hide()
-        else:
-            print(f"→ Menu não está visível, abrindo em ({x}, {y})...")
-            self.menu.show_at(x, y)
-        print()
-
-    def on_item_selected(self, item_type, item_data):
-        """Callback quando item é selecionado"""
-        print(f"→ Selecionado {item_type}: {item_data}")
-
-        # Executar ação no Xournal++
-        self.xournal_controller.execute_action(item_type, item_data)
-
-    def run(self):
-        """Executa a aplicação"""
-        # Timer para processar eventos periodicamente
-        self.timer = QTimer()
-        self.timer.timeout.connect(lambda: None)  # Apenas mantém o loop ativo
-        self.timer.start(100)
-
-        return self.app.exec()
-
-    def cleanup(self):
-        """Limpeza ao sair"""
-        print("\n→ Encerrando aplicação...")
-        if self.stylus_handler:
-            self.stylus_handler.stop()
+from pynput import keyboard, mouse
+from menu import Menu
 
 
 def main():
-    """Função principal"""
-    app = RadialMenuApp()
+    app = QApplication(sys.argv)
+    menu = Menu()
 
-    try:
-        exit_code = app.run()
-    finally:
-        app.cleanup()
+    # Estado Alt
+    alt_pressed = False
 
-    sys.exit(exit_code)
+    def on_press(key):
+        nonlocal alt_pressed
+        if key in [keyboard.Key.alt, keyboard.Key.alt_l, keyboard.Key.alt_r]:
+            alt_pressed = True
+        elif alt_pressed and hasattr(key, 'char') and key.char in ['r', 'R']:
+            # Alt+R - mostrar menu na posição do mouse
+            pos = mouse.Controller().position
+            menu.show_at(pos[0], pos[1])
+
+    def on_release(key):
+        nonlocal alt_pressed
+        if key in [keyboard.Key.alt, keyboard.Key.alt_l, keyboard.Key.alt_r]:
+            alt_pressed = False
+
+    # Conectar sinais
+    menu.color_selected.connect(lambda c: print(f"Cor: {c}"))
+    menu.tool_selected.connect(lambda t: print(f"Ferramenta: {t}"))
+
+    # Iniciar listener
+    listener = keyboard.Listener(on_press=on_press, on_release=on_release)
+    listener.start()
+
+    print("Menu iniciado. Pressione Alt+R para abrir.")
+    sys.exit(app.exec())
 
 
 if __name__ == "__main__":
