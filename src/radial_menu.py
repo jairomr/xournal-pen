@@ -24,6 +24,10 @@ class RadialMenuWidget(QWidget):
         self.setAttribute(Qt.WidgetAttribute.WA_NoSystemBackground)
         self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.Tool)
 
+        # Habilitar tracking de mouse e aceitar foco
+        self.setMouseTracking(True)
+        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+
         # Configuração dos raios (3 níveis)
         self.picker_radius = 50      # Nível 1: Color picker HSV no centro
         self.colors_inner = 55       # Início do nível 2
@@ -103,6 +107,11 @@ class RadialMenuWidget(QWidget):
         self.activateWindow()
         self.setFocus()  # Necessário para receber eventos de teclado
 
+        print(f"  → Widget visível: {self.isVisible()}")
+        print(f"  → Geometria: x={self.x()}, y={self.y()}, w={self.width()}, h={self.height()}")
+        print(f"  → Mouse tracking: {self.hasMouseTracking()}")
+        print(f"  → Focus policy: {self.focusPolicy()}")
+
     def calculate_angle(self, x, y):
         """Calcula o ângulo de um ponto em relação ao centro"""
         dx = x - self.center_x
@@ -165,15 +174,18 @@ class RadialMenuWidget(QWidget):
         level, data = self.detect_section(pos.x(), pos.y())
 
         if level != self.hover_level or data != self.hover_index:
+            print(f"→ Mouse move: ({pos.x()}, {pos.y()}) - seção: {level}, índice: {data}")
             self.hover_level = level
             self.hover_index = data
             self.update()  # Redesenhar
 
     def mousePressEvent(self, event):
         """Processa clique/toque"""
+        print(f"→ mousePressEvent disparado! Botão: {event.button()}")
+
         if event.button() == Qt.MouseButton.LeftButton:
             pos = event.pos()
-            print(f"→ Clique detectado em ({pos.x()}, {pos.y()})")
+            print(f"→ Clique ESQUERDO detectado em ({pos.x()}, {pos.y()})")
             level, data = self.detect_section(pos.x(), pos.y())
             print(f"→ Seção detectada: {level}, índice: {data}")
 
@@ -207,6 +219,9 @@ class RadialMenuWidget(QWidget):
             elif level == "outside":
                 print("→ Clique fora do menu, fechando")
                 self.hide()
+        else:
+            print(f"→ Botão não tratado: {event.button()} (esperado: {Qt.MouseButton.LeftButton})")
+            print(f"   Para fechar o menu, clique com o botão esquerdo fora do menu ou pressione ESC")
 
     def keyPressEvent(self, event):
         """Processa eventos de teclado"""
