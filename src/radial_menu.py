@@ -1,167 +1,170 @@
 """
-Radial Menu SIMPLES usando QPushButton
+Menu Radial SUPER SIMPLES - janela normal com botões
 """
 from PyQt6.QtWidgets import QWidget, QPushButton
 from PyQt6.QtCore import Qt, pyqtSignal
-from PyQt6.QtGui import QPainter, QPen, QBrush, QColor, QFont
+from PyQt6.QtGui import QColor
 import math
 
 
 class RadialMenuWidget(QWidget):
-    """Menu radial SIMPLES com botões reais"""
+    """Menu radial SUPER SIMPLES - sem transparência complicada"""
 
     itemSelected = pyqtSignal(str, dict)
 
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        # Configurar widget
-        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-        self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.Tool)
-        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
+        # Janela NORMAL - sem transparência!
+        self.setWindowFlags(Qt.WindowType.Popup)  # Popup fecha ao clicar fora
+        self.setStyleSheet("background-color: rgb(40, 40, 40);")  # Fundo cinza escuro
 
-        # Tamanho do widget
-        self.menu_size = 480
+        # Tamanho
+        self.menu_size = 500
         self.setFixedSize(self.menu_size, self.menu_size)
         self.center_x = self.menu_size // 2
         self.center_y = self.menu_size // 2
 
-        # 16 cores predefinidas
+        # 16 cores
         self.colors = [
-            {"name": "Preto", "color": QColor(0, 0, 0)},
-            {"name": "Cinza Escuro", "color": QColor(64, 64, 64)},
-            {"name": "Cinza", "color": QColor(128, 128, 128)},
-            {"name": "Cinza Claro", "color": QColor(192, 192, 192)},
-            {"name": "Branco", "color": QColor(255, 255, 255)},
-            {"name": "Vermelho", "color": QColor(255, 0, 0)},
-            {"name": "Laranja", "color": QColor(255, 127, 0)},
-            {"name": "Amarelo", "color": QColor(255, 255, 0)},
-            {"name": "Verde Lima", "color": QColor(127, 255, 0)},
-            {"name": "Verde", "color": QColor(0, 192, 0)},
-            {"name": "Ciano", "color": QColor(0, 255, 255)},
-            {"name": "Azul Claro", "color": QColor(51, 153, 255)},
-            {"name": "Azul", "color": QColor(51, 51, 204)},
-            {"name": "Roxo", "color": QColor(127, 0, 255)},
-            {"name": "Magenta", "color": QColor(255, 0, 255)},
-            {"name": "Rosa", "color": QColor(255, 0, 127)},
+            ("Preto", QColor(0, 0, 0)),
+            ("Cinza Escuro", QColor(64, 64, 64)),
+            ("Cinza", QColor(128, 128, 128)),
+            ("Cinza Claro", QColor(192, 192, 192)),
+            ("Branco", QColor(255, 255, 255)),
+            ("Vermelho", QColor(255, 0, 0)),
+            ("Laranja", QColor(255, 127, 0)),
+            ("Amarelo", QColor(255, 255, 0)),
+            ("Verde Lima", QColor(127, 255, 0)),
+            ("Verde", QColor(0, 192, 0)),
+            ("Ciano", QColor(0, 255, 255)),
+            ("Azul Claro", QColor(51, 153, 255)),
+            ("Azul", QColor(51, 51, 204)),
+            ("Roxo", QColor(127, 0, 255)),
+            ("Magenta", QColor(255, 0, 255)),
+            ("Rosa", QColor(255, 0, 127)),
         ]
 
         # 16 ferramentas
         self.tools = [
-            {"name": "Caneta Fina", "action": "pen_fine", "icon": "✏"},
-            {"name": "Caneta Média", "action": "pen_medium", "icon": "✎"},
-            {"name": "Caneta Grossa", "action": "pen_thick", "icon": "✐"},
-            {"name": "Marca-Texto", "action": "highlighter", "icon": "▓"},
-            {"name": "Borracha", "action": "eraser", "icon": "⌫"},
-            {"name": "Seleção", "action": "select", "icon": "⬚"},
-            {"name": "Mão", "action": "hand", "icon": "✋"},
-            {"name": "Zoom In", "action": "zoom_in", "icon": "+"},
-            {"name": "Zoom Out", "action": "zoom_out", "icon": "-"},
-            {"name": "Desfazer", "action": "undo", "icon": "↶"},
-            {"name": "Refazer", "action": "redo", "icon": "↷"},
-            {"name": "Pág. Anterior", "action": "page_prev", "icon": "◄"},
-            {"name": "Próxima Pág.", "action": "page_next", "icon": "►"},
-            {"name": "Texto", "action": "text", "icon": "T"},
-            {"name": "Imagem", "action": "image", "icon": "🖼"},
-            {"name": "Régua", "action": "ruler", "icon": "📏"},
+            ("Caneta Fina", "pen_fine", "✏"),
+            ("Caneta Média", "pen_medium", "✎"),
+            ("Caneta Grossa", "pen_thick", "✐"),
+            ("Marca-Texto", "highlighter", "▓"),
+            ("Borracha", "eraser", "⌫"),
+            ("Seleção", "select", "⬚"),
+            ("Mão", "hand", "✋"),
+            ("Zoom +", "zoom_in", "+"),
+            ("Zoom -", "zoom_out", "-"),
+            ("Desfazer", "undo", "↶"),
+            ("Refazer", "redo", "↷"),
+            ("Pág ◄", "page_prev", "◄"),
+            ("Pág ►", "page_next", "►"),
+            ("Texto", "text", "T"),
+            ("Imagem", "image", "🖼"),
+            ("Régua", "ruler", "📏"),
         ]
 
-        # Criar botões
-        self.color_buttons = []
-        self.tool_buttons = []
         self._create_buttons()
 
     def _create_buttons(self):
-        """Cria QPushButton para cada cor e ferramenta"""
+        """Cria botões grandes e fáceis de clicar"""
 
-        # Criar 16 botões de cores (anel médio)
-        colors_radius = 90
-        button_size = 40
+        # Botões de CORES - anel do meio
+        radius = 120
+        size = 45
 
-        for i, color_data in enumerate(self.colors):
-            angle = (i * 360 / 16) * math.pi / 180
-            x = self.center_x + colors_radius * math.cos(angle) - button_size // 2
-            y = self.center_y + colors_radius * math.sin(angle) - button_size // 2
+        for i, (name, color) in enumerate(self.colors):
+            angle = (i * 360 / 16 - 90) * math.pi / 180  # -90 para começar no topo
+            x = self.center_x + radius * math.cos(angle) - size // 2
+            y = self.center_y + radius * math.sin(angle) - size // 2
 
             btn = QPushButton(self)
-            btn.setGeometry(int(x), int(y), button_size, button_size)
-
-            color = color_data["color"]
+            btn.setGeometry(int(x), int(y), size, size)
             btn.setStyleSheet(f"""
                 QPushButton {{
                     background-color: rgb({color.red()}, {color.green()}, {color.blue()});
-                    border: 2px solid black;
-                    border-radius: {button_size//2}px;
+                    border: 3px solid white;
+                    border-radius: {size//2}px;
+                    font-size: 8px;
+                    color: white;
                 }}
                 QPushButton:hover {{
-                    border: 3px solid white;
+                    border: 4px solid yellow;
+                }}
+                QPushButton:pressed {{
+                    border: 4px solid red;
                 }}
             """)
+            btn.clicked.connect(lambda checked, n=name, c=color: self._select_color(n, c))
 
-            btn.clicked.connect(lambda checked, c=color_data: self._on_color_clicked(c))
-            self.color_buttons.append(btn)
+        # Botões de FERRAMENTAS - anel externo
+        radius = 200
+        size = 55
 
-        # Criar 16 botões de ferramentas (anel externo)
-        tools_radius = 170
-        button_size = 50
+        for i, (name, action, icon) in enumerate(self.tools):
+            angle = (i * 360 / 16 - 90) * math.pi / 180
+            x = self.center_x + radius * math.cos(angle) - size // 2
+            y = self.center_y + radius * math.sin(angle) - size // 2
 
-        for i, tool_data in enumerate(self.tools):
-            angle = (i * 360 / 16) * math.pi / 180
-            x = self.center_x + tools_radius * math.cos(angle) - button_size // 2
-            y = self.center_y + tools_radius * math.sin(angle) - button_size // 2
-
-            btn = QPushButton(tool_data["icon"], self)
-            btn.setGeometry(int(x), int(y), button_size, button_size)
-            btn.setFont(QFont("Sans", 20))
-
+            btn = QPushButton(icon, self)
+            btn.setGeometry(int(x), int(y), size, size)
+            btn.setToolTip(name)  # Mostra nome ao passar mouse
             btn.setStyleSheet(f"""
                 QPushButton {{
-                    background-color: rgba(240, 240, 240, 230);
-                    border: 2px solid black;
-                    border-radius: {button_size//2}px;
-                    color: black;
+                    background-color: rgb(220, 220, 220);
+                    border: 3px solid black;
+                    border-radius: {size//2}px;
+                    font-size: 24px;
+                    font-weight: bold;
                 }}
                 QPushButton:hover {{
-                    background-color: rgba(100, 150, 255, 230);
-                    border: 3px solid white;
+                    background-color: rgb(100, 150, 255);
+                    border: 4px solid yellow;
+                }}
+                QPushButton:pressed {{
+                    background-color: rgb(50, 100, 200);
+                    border: 4px solid red;
                 }}
             """)
+            btn.clicked.connect(lambda checked, n=name, a=action: self._select_tool(n, a))
 
-            btn.clicked.connect(lambda checked, t=tool_data: self._on_tool_clicked(t))
-            self.tool_buttons.append(btn)
+        # Botão FECHAR no centro
+        size = 60
+        btn = QPushButton("✕", self)
+        btn.setGeometry(self.center_x - size//2, self.center_y - size//2, size, size)
+        btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: rgb(200, 50, 50);
+                border: 3px solid white;
+                border-radius: {size//2}px;
+                color: white;
+                font-size: 30px;
+                font-weight: bold;
+            }}
+            QPushButton:hover {{
+                background-color: rgb(255, 100, 100);
+                border: 4px solid yellow;
+            }}
+        """)
+        btn.clicked.connect(self.hide)
 
-    def _on_color_clicked(self, color_data):
-        """Callback quando cor é clicada"""
-        print(f"→ COR SELECIONADA: {color_data['name']}")
-        self.itemSelected.emit("color", color_data)
+    def _select_color(self, name, color):
+        """Cor selecionada"""
+        print(f"✓ COR: {name}")
+        self.itemSelected.emit("color", {"name": name, "color": color})
         self.hide()
 
-    def _on_tool_clicked(self, tool_data):
-        """Callback quando ferramenta é clicada"""
-        print(f"→ FERRAMENTA SELECIONADA: {tool_data['name']} ({tool_data['action']})")
-        self.itemSelected.emit("tool", tool_data)
+    def _select_tool(self, name, action):
+        """Ferramenta selecionada"""
+        print(f"✓ FERRAMENTA: {name} ({action})")
+        self.itemSelected.emit("tool", {"name": name, "action": action})
         self.hide()
 
     def show_at(self, x, y):
-        """Mostra o menu na posição especificada"""
+        """Mostra menu"""
         print(f"→ Abrindo menu em ({x}, {y})")
         self.move(x - self.center_x, y - self.center_y)
         self.show()
         self.raise_()
         self.activateWindow()
-        self.setFocus()
-
-    def keyPressEvent(self, event):
-        """ESC fecha o menu"""
-        if event.key() == Qt.Key.Key_Escape:
-            print("→ ESC pressionado, fechando menu")
-            self.hide()
-
-    def paintEvent(self, event):
-        """Desenha fundo do menu"""
-        painter = QPainter(self)
-
-        # Fundo semi-transparente
-        painter.setBrush(QBrush(QColor(0, 0, 0, 150)))
-        painter.setPen(Qt.PenStyle.NoPen)
-        painter.drawEllipse(self.center_x - 220, self.center_y - 220, 440, 440)
