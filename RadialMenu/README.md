@@ -10,13 +10,28 @@ Plugin de menu radial (pie menu) otimizado para uso com stylus/mesa digitalizado
 - **8 cores predefinidas** no círculo central
 - **8 ferramentas** no anel externo (canetas, borracha, marca-texto, navegação de páginas, etc.)
 
-## ⚠️ Limitação Importante
+## ⚠️ Limitações Importantes
+
+### 1. Eventos de Stylus
 
 A API de plugins Lua do Xournal++ **não suporta captura direta de eventos de stylus** (hover, tap, botão lateral).
 
 **Solução implementada:**
 - O menu é ativado por **atalho de teclado** (`Alt+R`)
 - Você deve **mapear o botão lateral da stylus** para este atalho no driver/sistema operacional
+
+### 2. Posição do Menu
+
+A API Lua **não fornece acesso à posição atual do cursor/stylus**.
+
+**Comportamento atual:**
+- O menu sempre aparece na **mesma posição** (configurável)
+- Posição padrão: (300, 400) pixels
+- Você pode **customizar** esta posição editando `defaultMenuX` e `defaultMenuY` no arquivo `main.lua`
+
+**Solução futura:**
+- Com o patch C++ (incluído em `cpp-patch/`), o menu poderia aparecer exatamente onde a caneta está
+- Requer recompilar o Xournal++ do código-fonte
 
 ## 📦 Instalação
 
@@ -237,17 +252,22 @@ ToolRing = {
 }
 ```
 
-### Ajustar Tamanhos
+### Ajustar Tamanhos e Posição
 
 No início de `main.lua`:
 
 ```lua
 MenuState = {
-    innerRadius = 40,  -- Raio do círculo de cores
-    outerRadius = 120, -- Raio do anel de ferramentas
-    -- ...
+    innerRadius = 40,   -- Raio do círculo de cores
+    outerRadius = 120,  -- Raio do anel de ferramentas
+
+    -- Posição do menu na página (customize!)
+    defaultMenuX = 300,  -- Posição horizontal (pixels)
+    defaultMenuY = 400,  -- Posição vertical (pixels)
 }
 ```
+
+**Nota:** Como a API Lua não fornece acesso à posição do cursor, o menu sempre aparece nesta posição fixa. Ajuste os valores `defaultMenuX` e `defaultMenuY` para posicionar o menu onde preferir na sua página.
 
 ## 🔧 Solução de Problemas
 

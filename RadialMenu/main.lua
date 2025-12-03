@@ -23,7 +23,13 @@ MenuState = {
     innerRadius = 40,  -- Raio do círculo central (paleta de cores)
     outerRadius = 120, -- Raio do anel externo (ferramentas)
     lastTouchX = 0,
-    lastTouchY = 0
+    lastTouchY = 0,
+
+    -- Posição padrão do menu (customize aqui!)
+    -- Como a API não fornece posição do cursor, o menu aparece sempre nesta posição
+    -- Ajuste estes valores para posicionar o menu onde você preferir na página
+    defaultMenuX = 300,
+    defaultMenuY = 400
 }
 
 -- ==============================================================================
@@ -377,13 +383,12 @@ end
 -- LÓGICA DO MENU
 -- ==============================================================================
 
--- Obtém posição atual do cursor (aproximação)
--- Como a API não fornece posição do cursor, usa centro da viewport
+-- Obtém posição para desenhar o menu
+-- LIMITAÇÃO: A API Lua não fornece acesso à posição atual do cursor/stylus
+-- Por isso, usamos a posição configurável em MenuState.defaultMenuX/Y
+-- Para mudar a posição do menu, edite os valores no início deste arquivo
 function getCurrentCursorPosition()
-    -- Posição aproximada no centro da tela visível
-    -- Em uma implementação real com eventos de stylus, usaríamos a posição real
-    -- WORKAROUND: Desenha o menu no centro da página
-    return 300, 400  -- Posição fixa para demonstração
+    return MenuState.defaultMenuX, MenuState.defaultMenuY
 end
 
 -- Abre o menu radial
