@@ -2,21 +2,23 @@
 
 Menu simples para Xournal++ usando PyQt6.
 
-## Instalação
+## Instalação Windows
+
+```powershell
+# Se o projeto está no OneDrive, usar:
+$env:UV_LINK_MODE="copy"
+uv run python src/main.py
+
+# OU mover projeto para fora do OneDrive (C:\projetos)
+```
+
+## Instalação Linux/Mac
 
 ```bash
-# Instalar dependências
-uv pip install .
-
-# Ou com pip
-pip install -e .
+uv run python src/main.py
 ```
 
 ## Uso
-
-```bash
-python src/main.py
-```
 
 Pressione **Alt+R** para abrir o menu.
 
