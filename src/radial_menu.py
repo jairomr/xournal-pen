@@ -3,9 +3,9 @@ Radial Menu Widget for Xournal++
 Menu radial de 3 níveis: Color Picker (centro) + 16 cores + Ferramentas
 """
 
-from PyQt5.QtWidgets import QWidget
-from PyQt5.QtCore import Qt, QPoint, QRect, pyqtSignal
-from PyQt5.QtGui import QPainter, QPen, QBrush, QColor, QFont, QPainterPath, QConicalGradient, QRadialGradient
+from PyQt6.QtWidgets import QWidget
+from PyQt6.QtCore import Qt, QPoint, QRect, pyqtSignal
+from PyQt6.QtGui import QPainter, QPen, QBrush, QColor, QFont, QPainterPath, QConicalGradient, QRadialGradient
 import math
 import colorsys
 
@@ -20,9 +20,9 @@ class RadialMenuWidget(QWidget):
         super().__init__(parent)
 
         # Configurar widget
-        self.setAttribute(Qt.WA_TranslucentBackground)
-        self.setAttribute(Qt.WA_NoSystemBackground)
-        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        self.setAttribute(Qt.WidgetAttribute.WA_NoSystemBackground)
+        self.setWindowFlags(Qt.WindowType.FramelessWindowHint | Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.Tool)
 
         # Configuração dos raios (3 níveis)
         self.picker_radius = 50      # Nível 1: Color picker HSV no centro
@@ -160,7 +160,7 @@ class RadialMenuWidget(QWidget):
 
     def mousePressEvent(self, event):
         """Processa clique/toque"""
-        if event.button() == Qt.LeftButton:
+        if event.button() == Qt.MouseButton.LeftButton:
             pos = event.pos()
             level, data = self.detect_section(pos.x(), pos.y())
 
@@ -199,7 +199,7 @@ class RadialMenuWidget(QWidget):
 
         # 1. Fundo semi-transparente geral
         painter.setBrush(QBrush(QColor(0, 0, 0, 80)))
-        painter.setPen(Qt.NoPen)
+        painter.setPen(Qt.PenStyle.NoPen)
         painter.drawEllipse(QPoint(cx, cy), self.tools_outer, self.tools_outer)
 
         # ============================================================
@@ -208,8 +208,8 @@ class RadialMenuWidget(QWidget):
         self.draw_hsv_picker(painter, cx, cy)
 
         # Borda do picker
-        painter.setBrush(Qt.NoBrush)
-        painter.setPen(QPen(Qt.black, 3))
+        painter.setBrush(Qt.BrushStyle.NoBrush)
+        painter.setPen(QPen(black, 3))
         painter.drawEllipse(QPoint(cx, cy), self.picker_radius, self.picker_radius)
 
         # ============================================================
@@ -234,8 +234,8 @@ class RadialMenuWidget(QWidget):
             )
 
         # Bordas do anel de cores
-        painter.setBrush(Qt.NoBrush)
-        painter.setPen(QPen(Qt.black, 2))
+        painter.setBrush(Qt.BrushStyle.NoBrush)
+        painter.setPen(QPen(black, 2))
         painter.drawEllipse(QPoint(cx, cy), self.colors_inner, self.colors_inner)
         painter.drawEllipse(QPoint(cx, cy), self.colors_outer, self.colors_outer)
 
@@ -261,7 +261,7 @@ class RadialMenuWidget(QWidget):
                 painter, cx, cy,
                 self.tools_inner, self.tools_outer,
                 start_angle_deg, end_angle_deg,
-                bg_color, Qt.black
+                bg_color, black
             )
 
             # Desenhar ícone/texto da ferramenta
@@ -270,7 +270,7 @@ class RadialMenuWidget(QWidget):
             label_x = cx + label_radius * math.cos(mid_angle_rad)
             label_y = cy + label_radius * math.sin(mid_angle_rad)
 
-            painter.setPen(QPen(Qt.black))
+            painter.setPen(QPen(black))
             font = QFont("Sans", 16, QFont.Bold)
             painter.setFont(font)
 
@@ -282,10 +282,10 @@ class RadialMenuWidget(QWidget):
             painter.drawText(int(text_x), int(text_y), icon)
 
         # Bordas do anel de ferramentas
-        painter.setBrush(Qt.NoBrush)
-        painter.setPen(QPen(Qt.black, 2))
+        painter.setBrush(Qt.BrushStyle.NoBrush)
+        painter.setPen(QPen(black, 2))
         painter.drawEllipse(QPoint(cx, cy), self.tools_inner, self.tools_inner)
-        painter.setPen(QPen(Qt.black, 4))
+        painter.setPen(QPen(black, 4))
         painter.drawEllipse(QPoint(cx, cy), self.tools_outer, self.tools_outer)
 
     def draw_hsv_picker(self, painter, cx, cy):
@@ -300,7 +300,7 @@ class RadialMenuWidget(QWidget):
             gradient.setColorAt(i / 360.0, color)
 
         # Desenhar círculo com gradiente de hue
-        painter.setPen(Qt.NoPen)
+        painter.setPen(Qt.PenStyle.NoPen)
         painter.setBrush(QBrush(gradient))
         painter.drawEllipse(QPoint(cx, cy), self.picker_radius, self.picker_radius)
 

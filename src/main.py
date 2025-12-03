@@ -1,11 +1,11 @@
 """
 Xournal++ Radial Menu - Aplicação Principal
-Menu radial standalone para stylus usando PyQt5
+Menu radial standalone para stylus usando PyQt6
 """
 
 import sys
-from PyQt5.QtWidgets import QApplication
-from PyQt5.QtCore import QTimer
+from PyQt6.QtWidgets import QApplication
+from PyQt6.QtCore import QTimer
 
 from radial_menu import RadialMenuWidget
 from stylus_handler import StylusHandler
@@ -31,7 +31,7 @@ class RadialMenuApp:
         self.stylus_handler.start()
 
         print("="*60)
-        print(f"Xournal++ Radial Menu v{__version__} - Python/PyQt5 Edition")
+        print(f"Xournal++ Radial Menu v{__version__} - Python/PyQt6 Edition")
         print("="*60)
         print()
         print("✓ Aplicação iniciada")
@@ -65,7 +65,7 @@ class RadialMenuApp:
         self.timer.timeout.connect(lambda: None)  # Apenas mantém o loop ativo
         self.timer.start(100)
 
-        return self.app.exec_()
+        return self.app.exec()
 
     def cleanup(self):
         """Limpeza ao sair"""

@@ -115,7 +115,7 @@ class XournalController:
         """
         # Importar apenas quando necessário
         try:
-            from PyQt5.QtGui import QColor
+            from PyQt6.QtGui import QColor
         except ImportError:
             return None
 
