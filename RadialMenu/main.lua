@@ -26,10 +26,14 @@ MenuState = {
     lastTouchY = 0,
 
     -- Posição padrão do menu (customize aqui!)
-    -- Como a API não fornece posição do cursor, o menu aparece sempre nesta posição
-    -- Ajuste estes valores para posicionar o menu onde você preferir na página
+    -- Com lua-lgi instalado, o menu aparece na posição do cursor automaticamente
+    -- Caso contrário, usa estes valores como fallback
     defaultMenuX = 300,
-    defaultMenuY = 400
+    defaultMenuY = 400,
+
+    -- Habilitar/desabilitar labels de texto (pode causar erros em algumas versões)
+    -- Se você tiver problemas com addTexts, mude para false
+    enableTextLabels = true
 }
 
 -- ==============================================================================
@@ -296,19 +300,34 @@ function drawSlice(centerX, centerY, innerRadius, outerRadius, startAngle, endAn
 end
 
 -- Desenha texto na posição especificada
+-- NOTA: A função addTexts pode causar erros em algumas versões do Xournal++
+-- Os labels são opcionais - o menu funciona perfeitamente sem eles
 function drawText(text, x, y, color, fontSize)
-    app.addTexts({
-        ["texts"] = {
-            {
-                ["text"] = text,
-                ["font"] = {["name"] = "Sans", ["size"] = fontSize or 10},
-                ["x"] = x,
-                ["y"] = y,
-                ["color"] = color or 0x000000
-            }
-        },
-        ["allowUndoRedoAction"] = "grouped"
-    })
+    -- Verificar se labels estão habilitados
+    if not MenuState.enableTextLabels then
+        return
+    end
+
+    -- Tentar adicionar texto, mas não falhar se der erro
+    local success, err = pcall(function()
+        app.addTexts({
+            ["texts"] = {
+                {
+                    ["text"] = text,
+                    ["font"] = {["name"] = "Sans", ["size"] = fontSize or 10},
+                    ["x"] = x,
+                    ["y"] = y,
+                    ["color"] = color or 0x000000
+                }
+            },
+            ["allowUndoRedoAction"] = "grouped"
+        })
+    end)
+
+    if not success then
+        -- Falhou silenciosamente - menu ainda funciona sem texto
+        print("RadialMenu: Aviso - addTexts falhou. Considere desabilitar labels (enableTextLabels = false)")
+    end
 end
 
 -- Renderiza o menu radial completo
