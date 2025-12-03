@@ -56,9 +56,12 @@ jobs:
       run: |
         pyinstaller --onefile \
           --name xournal-radial-menu-linux \
-          --windowed \
-          --add-data "assets:assets" \
+          --noconsole \
+          --hidden-import=pkg_resources.py2_warn \
           src/main.py
+
+    - name: Make executable
+      run: chmod +x dist/xournal-radial-menu-linux
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
@@ -85,11 +88,7 @@ jobs:
 
     - name: Build with PyInstaller
       run: |
-        pyinstaller --onefile `
-          --name xournal-radial-menu-windows.exe `
-          --windowed `
-          --add-data "assets;assets" `
-          src/main.py
+        pyinstaller --onefile --name xournal-radial-menu-windows --noconsole --hidden-import=pkg_resources.py2_warn src/main.py
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
@@ -118,9 +117,12 @@ jobs:
       run: |
         pyinstaller --onefile \
           --name xournal-radial-menu-macos \
-          --windowed \
-          --add-data "assets:assets" \
+          --noconsole \
+          --hidden-import=pkg_resources.py2_warn \
           src/main.py
+
+    - name: Make executable
+      run: chmod +x dist/xournal-radial-menu-macos
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
@@ -137,6 +139,10 @@ jobs:
     - name: Download all artifacts
       uses: actions/download-artifact@v4
 
+    - name: List downloaded artifacts
+      run: |
+        ls -R
+
     - name: Create Release
       uses: softprops/action-gh-release@v1
       with:
@@ -146,5 +152,6 @@ jobs:
           xournal-radial-menu-macos/xournal-radial-menu-macos
         draft: false
         prerelease: false
+        generate_release_notes: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
