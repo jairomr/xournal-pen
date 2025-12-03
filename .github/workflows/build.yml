@@ -62,6 +62,10 @@ jobs:
           --name xournal-radial-menu-linux \
           --noconsole \
           --hidden-import=pkg_resources.py2_warn \
+          --hidden-import=radial_menu \
+          --hidden-import=stylus_handler \
+          --hidden-import=xournal_controller \
+          --paths=src \
           src/main.py
 
     - name: Make executable
@@ -92,7 +96,7 @@ jobs:
 
     - name: Build with PyInstaller
       run: |
-        pyinstaller --onefile --name xournal-radial-menu-windows --noconsole --hidden-import=pkg_resources.py2_warn src/main.py
+        pyinstaller --onefile --name xournal-radial-menu-windows --noconsole --hidden-import=pkg_resources.py2_warn --hidden-import=radial_menu --hidden-import=stylus_handler --hidden-import=xournal_controller --paths=src src/main.py
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
@@ -123,6 +127,10 @@ jobs:
           --name xournal-radial-menu-macos \
           --noconsole \
           --hidden-import=pkg_resources.py2_warn \
+          --hidden-import=radial_menu \
+          --hidden-import=stylus_handler \
+          --hidden-import=xournal_controller \
+          --paths=src \
           src/main.py
 
     - name: Make executable

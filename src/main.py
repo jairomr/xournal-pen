@@ -30,7 +30,7 @@ class RadialMenuApp:
         self.stylus_handler.start()
 
         print("="*60)
-        print("Xournal++ Radial Menu v2.0 - Python/PyQt5 Edition")
+        print("Xournal++ Radial Menu v2.1.0 - Python/PyQt5 Edition")
         print("="*60)
         print()
         print("✓ Aplicação iniciada")
