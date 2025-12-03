@@ -10,6 +10,7 @@ from PyQt5.QtCore import QTimer
 from radial_menu import RadialMenuWidget
 from stylus_handler import StylusHandler
 from xournal_controller import XournalController
+from _version import __version__
 
 
 class RadialMenuApp:
@@ -30,7 +31,7 @@ class RadialMenuApp:
         self.stylus_handler.start()
 
         print("="*60)
-        print("Xournal++ Radial Menu v2.1.0 - Python/PyQt5 Edition")
+        print(f"Xournal++ Radial Menu v{__version__} - Python/PyQt5 Edition")
         print("="*60)
         print()
         print("✓ Aplicação iniciada")
