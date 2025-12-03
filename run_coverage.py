@@ -31,6 +31,24 @@ def main():
         print(f"  - {os.path.basename(f)}")
     print()
 
+    # Primeiro rodar teste de API PyQt6 (sem coverage)
+    print("Verificando APIs PyQt6...")
+    print("-" * 70)
+    api_test = os.path.join(tests_dir, 'test_pyqt6_api.py')
+    if os.path.exists(api_test):
+        result = subprocess.run(
+            ['python', api_test],
+            cwd=project_dir,
+            capture_output=True,
+            text=True
+        )
+        print(result.stdout)
+        if result.returncode != 0:
+            print("✗ ERRO: Teste de API PyQt6 falhou!")
+            print(result.stderr)
+            return 1
+    print()
+
     # Rodar coverage
     print("Rodando testes com cobertura...")
     print("-" * 70)
