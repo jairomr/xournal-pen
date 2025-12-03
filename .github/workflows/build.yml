@@ -2,7 +2,10 @@ name: Build and Release
 
 on:
   push:
-    branches: [ main, develop ]
+    branches:
+      - main
+      - develop
+      - 'claude/**'
     tags:
       - 'v*'
   pull_request:
