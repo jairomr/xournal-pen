@@ -69,28 +69,23 @@ cd xournal-pen
 ### Passo 2: Instalar Dependências
 
 ```cmd
-# Opção A: Instalar globalmente (mais simples)
-pip install PyQt5 pynput pyautogui pyyaml
+# Opção A: Com pip (padrão)
+pip install -r requirements.txt
 
-# Opção B: Com ambiente virtual (recomendado)
+# Opção B: Com UV (10-100x mais rápido) ⭐
+uv pip install -r requirements.txt
+
+# Opção C: Com ambiente virtual
 python -m venv venv
 venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
+**⚠️ Importante:** Sempre use `requirements.txt`, não instale pacotes individuais!
+
 ### Passo 3: Executar
 
 ```cmd
-# Método 1: Script direto
-python run.py
-
-# Método 2: Via módulo
-python src\main.py
-```
-
-**Observação:** Se você usar `uv`, execute apenas:
-```cmd
-uv pip install PyQt5 pynput pyautogui pyyaml
 python run.py
 ```
 

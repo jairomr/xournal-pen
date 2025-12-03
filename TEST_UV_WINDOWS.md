@@ -41,10 +41,12 @@ cd xournal-pen
 ### 2. Instalar Dependências com UV
 
 ```cmd
-uv pip install PyQt5 pynput pyautogui pyyaml
+uv pip install -r requirements.txt
 ```
 
 **Observação:** `uv` é MUITO mais rápido que pip (10-100x)!
+
+**⚠️ Importante:** Use sempre `requirements.txt` com UV! Não instale pacotes individuais.
 
 ### 3. Testar Imports (sem GUI)
 
@@ -143,8 +145,8 @@ uv pip install PyQt5  # ~10-30 segundos
 ## Comandos Úteis
 
 ```cmd
-# Instalar dependências
-uv pip install PyQt5 pynput pyautogui pyyaml
+# Instalar dependências (recomendado)
+uv pip install -r requirements.txt
 
 # Listar pacotes instalados
 uv pip list
