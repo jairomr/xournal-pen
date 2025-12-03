@@ -272,7 +272,7 @@ class RadialMenuWidget(QWidget):
             label_y = cy + label_radius * math.sin(mid_angle_rad)
 
             painter.setPen(QPen(black))
-            font = QFont("Sans", 16, QFont.Bold)
+            font = QFont("Sans", 16, QFont.Weight.Bold)
             painter.setFont(font)
 
             # Desenhar ícone
