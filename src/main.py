@@ -14,17 +14,28 @@ def main():
 
     def on_press(key):
         nonlocal alt_pressed
+        print(f"Tecla pressionada: {key}, Alt: {alt_pressed}")
+
         if key in [keyboard.Key.alt, keyboard.Key.alt_l, keyboard.Key.alt_r]:
             alt_pressed = True
-        elif alt_pressed and hasattr(key, 'char') and key.char in ['r', 'R']:
-            # Alt+R - mostrar menu na posição do mouse
-            pos = mouse.Controller().position
-            menu.show_at(pos[0], pos[1])
+            print("Alt pressionado")
+        else:
+            # Verificar se é 'r'
+            is_r = False
+            if hasattr(key, 'char') and key.char:
+                is_r = key.char.lower() == 'r'
+
+            if alt_pressed and is_r:
+                print("Alt+R detectado! Abrindo menu...")
+                pos = mouse.Controller().position
+                print(f"Posição do mouse: {pos}")
+                menu.show_at(pos[0], pos[1])
 
     def on_release(key):
         nonlocal alt_pressed
         if key in [keyboard.Key.alt, keyboard.Key.alt_l, keyboard.Key.alt_r]:
             alt_pressed = False
+            print("Alt solto")
 
     # Conectar sinais
     menu.color_selected.connect(lambda c: print(f"Cor: {c}"))
