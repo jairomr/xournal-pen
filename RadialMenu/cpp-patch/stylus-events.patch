@@ -1,0 +1,457 @@
+diff --git a/plugins/luapi_application.def.lua b/plugins/luapi_application.def.lua
+index 1234567..abcdefg 100644
+--- a/plugins/luapi_application.def.lua
++++ b/plugins/luapi_application.def.lua
+@@ -500,6 +500,30 @@ function app.showFloatingToolbox(x, y)
+ end
+
+
++---
++-- Register a handler for stylus/pen input events
++-- This allows plugins to respond to stylus hover, tap, and button events
++-- @param handler table containing callback functions:
++--   - hover(x, y, pressure): called when stylus moves (hovering or touching)
++--   - tap(x, y, pressure): called when stylus taps the surface
++--   - button(buttonNum, pressed, x, y): called when stylus button is pressed/released
++--   - proximity_in(): called when stylus enters proximity
++--   - proximity_out(): called when stylus leaves proximity
++-- @return nil
++function app.registerStylusHandler(handler)
++end
++
++
++---
++-- Get the current state of the stylus/pen
++-- @return table with stylus state: {
++--   x: number,           -- X coordinate
++--   y: number,           -- Y coordinate
++--   pressure: number,    -- Pressure value (0.0 to 1.0)
++--   proximity: boolean,  -- Whether stylus is in proximity
++--   buttons: table       -- Array of button states (indexed from 1)
++-- }
++function app.getStylusState()
++end
++
++
+diff --git a/src/core/plugin/Plugin.cpp b/src/core/plugin/Plugin.cpp
+index 2345678..bcdefgh 100644
+--- a/src/core/plugin/Plugin.cpp
++++ b/src/core/plugin/Plugin.cpp
+@@ -45,6 +45,8 @@ Plugin::Plugin(Control* control, std::string name, std::filesystem::path path):
+         name(std::move(name)),
+         path(std::move(path)),
+         valid(false),
++        stylusHandlerRef(LUA_NOREF),
++        lastStylusState{0, 0, 0, false, {false, false, false}},
+         enabled(false) {
+
+     this->lua = luaL_newstate();
+@@ -120,6 +122,8 @@ void Plugin::registerToolbar() {
+         {"fileDialogSave", fileDialogSave},
+         {"fileDialogOpen", fileDialogOpen},
+         {"showFloatingToolbox", showFloatingToolbox},
++        {"registerStylusHandler", registerStylusHandler},
++        {"getStylusState", getStylusState},
+
+         // sentinel
+         {nullptr, nullptr}};
+@@ -850,6 +854,112 @@ auto Plugin::showFloatingToolbox(lua_State* L) -> int {
+     return 0;
+ }
+
++
++/**
++ * Register handler for stylus events
++ *
++ * Lua example:
++ * app.registerStylusHandler({
++ *   hover = function(x, y, pressure) ... end,
++ *   tap = function(x, y, pressure) ... end,
++ *   button = function(buttonNum, pressed, x, y) ... end,
++ *   proximity_in = function() ... end,
++ *   proximity_out = function() ... end
++ * })
++ */
++auto Plugin::registerStylusHandler(lua_State* L) -> int {
++    Plugin* plugin = Plugin::checkFromLua(L);
++
++    // Argument must be a table with callback functions
++    if (!lua_istable(L, 1)) {
++        return luaL_error(L, "registerStylusHandler: argument must be a table");
++    }
++
++    // If there's an existing handler, unref it
++    if (plugin->stylusHandlerRef != LUA_NOREF) {
++        luaL_unref(L, LUA_REGISTRYINDEX, plugin->stylusHandlerRef);
++    }
++
++    // Store reference to callback table
++    lua_pushvalue(L, 1);
++    plugin->stylusHandlerRef = luaL_ref(L, LUA_REGISTRYINDEX);
++
++    g_message("Plugin '%s': Registered stylus event handler", plugin->name.c_str());
++
++    return 0;
++}
++
++
++/**
++ * Get current stylus state
++ *
++ * Returns table: {x, y, pressure, proximity, buttons}
++ */
++auto Plugin::getStylusState(lua_State* L) -> int {
++    Plugin* plugin = Plugin::checkFromLua(L);
++
++    // Create table for return value
++    lua_newtable(L);
++
++    // Add coordinates
++    lua_pushnumber(L, plugin->lastStylusState.x);
++    lua_setfield(L, -2, "x");
++
++    lua_pushnumber(L, plugin->lastStylusState.y);
++    lua_setfield(L, -2, "y");
++
++    // Add pressure
++    lua_pushnumber(L, plugin->lastStylusState.pressure);
++    lua_setfield(L, -2, "pressure");
++
++    // Add proximity
++    lua_pushboolean(L, plugin->lastStylusState.proximity);
++    lua_setfield(L, -2, "proximity");
++
++    // Add button states as array
++    lua_newtable(L);
++    for (size_t i = 0; i < 3; i++) {
++        lua_pushboolean(L, plugin->lastStylusState.buttons[i]);
++        lua_rawseti(L, -2, i + 1);  // Lua arrays are 1-indexed
++    }
++    lua_setfield(L, -2, "buttons");
++
++    return 1;  // Return the table
++}
++
++
++/**
++ * Notify plugin of stylus event
++ * Called by PluginController when stylus event occurs
++ */
++void Plugin::notifyStylusEvent(const std::string& eventType, double x, double y,
++                                 double pressure, int button, bool pressed) {
++    if (this->stylusHandlerRef == LUA_NOREF) {
++        return;  // No handler registered
++    }
++
++    // Update cached state
++    lastStylusState.x = x;
++    lastStylusState.y = y;
++    lastStylusState.pressure = pressure;
++    if (button > 0 && button <= 3) {
++        lastStylusState.buttons[button - 1] = pressed;
++    }
++
++    // Get callback table from registry
++    lua_rawgeti(this->lua, LUA_REGISTRYINDEX, this->stylusHandlerRef);
++
++    // Get specific callback (hover, tap, button, etc.)
++    lua_getfield(this->lua, -1, eventType.c_str());
++
++    if (!lua_isfunction(this->lua, -1)) {
++        lua_pop(this->lua, 2);  // Pop function and table
++        return;  // No callback for this event type
++    }
++
++    // Push arguments based on event type
++    lua_pushnumber(this->lua, x);
++    lua_pushnumber(this->lua, y);
++
++    int nargs = 2;
++
++    if (eventType == "button") {
++        lua_pushinteger(this->lua, button);
++        lua_pushboolean(this->lua, pressed);
++        nargs = 4;
++    } else if (eventType == "hover" || eventType == "tap") {
++        lua_pushnumber(this->lua, pressure);
++        nargs = 3;
++    } else if (eventType == "proximity_in" || eventType == "proximity_out") {
++        nargs = 0;
++        lua_pop(this->lua, 2);  // Pop x and y, not needed for proximity events
++    }
++
++    // Call the Lua function
++    if (lua_pcall(this->lua, nargs, 0, 0) != 0) {
++        g_warning("Plugin '%s': Error in stylus %s handler: %s",
++                  this->name.c_str(), eventType.c_str(), lua_tostring(this->lua, -1));
++        lua_pop(this->lua, 1);
++    }
++
++    lua_pop(this->lua, 1);  // Pop callback table
++}
++
+
+ /**
+  * Allow to register menupoints or toolbar buttons
+diff --git a/src/core/plugin/Plugin.h b/src/core/plugin/Plugin.h
+index 3456789..cdefghi 100644
+--- a/src/core/plugin/Plugin.h
++++ b/src/core/plugin/Plugin.h
+@@ -30,6 +30,15 @@ class PluginController;
+ class Control;
+ class GladeSearchpath;
+
++
++struct StylusState {
++    double x;
++    double y;
++    double pressure;
++    bool proximity;
++    bool buttons[3];  // Up to 3 buttons
++};
++
+ class Plugin {
+ public:
+     Plugin(Control* control, std::string name, std::filesystem::path path);
+@@ -72,6 +81,16 @@ public:
+      */
+     void executeMenuEntry(int id);
+
++    /**
++     * Notify plugin of stylus event
++     * Called by PluginController when stylus/pen event occurs
++     *
++     * @param eventType Type of event: "hover", "tap", "button", "proximity_in", "proximity_out"
++     * @param x, y Coordinates
++     * @param pressure Pressure value (0.0 to 1.0)
++     * @param button Button number (for button events)
++     * @param pressed Button state (for button events)
++     */
++    void notifyStylusEvent(const std::string& eventType, double x, double y,
++                           double pressure = 0.0, int button = 0, bool pressed = false);
++
+ private:
+     /**
+      * The Lua State
+@@ -191,6 +210,12 @@ private:
+      */
+     static auto showFloatingToolbox(lua_State* L) -> int;
+
++    /**
++     * Register handler for stylus events
++     */
++    static auto registerStylusHandler(lua_State* L) -> int;
++    static auto getStylusState(lua_State* L) -> int;
++
+     /**
+      * Helper function to run a Lua function or script
+      */
+@@ -260,6 +285,14 @@ private:
+      * Script path for plugin init script within the plugin folder
+      */
+     std::string mainfile;
++
++    /**
++     * Stylus event handler
++     */
++    int stylusHandlerRef;  // Lua reference to handler table
++
++    /**
++     * Last known stylus state
++     */
++    StylusState lastStylusState;
+ };
+
+diff --git a/src/core/plugin/PluginController.cpp b/src/core/plugin/PluginController.cpp
+index 4567890..defghij 100644
+--- a/src/core/plugin/PluginController.cpp
++++ b/src/core/plugin/PluginController.cpp
+@@ -150,6 +150,26 @@ void PluginController::executeMenuEntry(int id) {
+     }
+ }
+
++
++/**
++ * Notify all plugins of a stylus event
++ */
++void PluginController::notifyStylusEvent(const std::string& eventType, double x, double y,
++                                          double pressure, int button, bool pressed) {
++    for (auto& plugin : this->plugins) {
++        if (plugin->isEnabled()) {
++            plugin->notifyStylusEvent(eventType, x, y, pressure, button, pressed);
++        }
++    }
++}
++
++
++/**
++ * Notify all plugins of proximity event
++ */
++void PluginController::notifyProximityEvent(bool entering) {
++    const std::string eventType = entering ? "proximity_in" : "proximity_out";
++    notifyStylusEvent(eventType, 0, 0, 0, 0, false);
++}
++
+ /**
+  * Register toolbar item and return the generated ID
+diff --git a/src/core/plugin/PluginController.h b/src/core/plugin/PluginController.h
+index 5678901..efghijk 100644
+--- a/src/core/plugin/PluginController.h
++++ b/src/core/plugin/PluginController.h
+@@ -65,6 +65,15 @@ public:
+      */
+     void executeMenuEntry(int id);
+
++    /**
++     * Notify plugins of stylus events
++     */
++    void notifyStylusEvent(const std::string& eventType, double x, double y,
++                           double pressure = 0.0, int button = 0, bool pressed = false);
++
++    /**
++     * Notify plugins of proximity events
++     */
++    void notifyProximityEvent(bool entering);
++
+     /**
+      * Register toolbar item and return the generated ID
+diff --git a/src/core/gui/XournalView.cpp b/src/core/gui/XournalView.cpp
+index 6789012..fghijkl 100644
+--- a/src/core/gui/XournalView.cpp
++++ b/src/core/gui/XournalView.cpp
+@@ -250,6 +250,95 @@ auto XournalView::onButtonPressEvent(GtkWidget* widget, GdkEventButton* event)
+     return inputHandler->onButtonPressEvent(event);
+ }
+
++
++/**
++ * Handle stylus motion events (hover and touch)
++ * Dispatches to plugin system for stylus-aware plugins
++ */
++auto XournalView::onStylusMotionEvent(GtkWidget* widget, GdkEventMotion* event) -> bool {
++    GdkDevice* device = gdk_event_get_source_device((GdkEvent*)event);
++    if (!device) {
++        return false;
++    }
++
++    GdkInputSource source = gdk_device_get_source(device);
++
++    // Only handle stylus/pen/eraser events
++    if (source != GDK_SOURCE_PEN && source != GDK_SOURCE_ERASER) {
++        return false;
++    }
++
++    // Get coordinates and pressure
++    double x = event->x;
++    double y = event->y;
++    double pressure = 0.0;
++
++    GdkDevice* sourceDevice = gdk_event_get_source_device((GdkEvent*)event);
++    if (sourceDevice && gdk_device_get_n_axes(sourceDevice) > 2) {
++        gdk_event_get_axis((GdkEvent*)event, GDK_AXIS_PRESSURE, &pressure);
++    }
++
++    // Notify plugins
++    if (this->control->getPluginController()) {
++        std::string eventType = (pressure > 0.01) ? "tap" : "hover";
++        this->control->getPluginController()->notifyStylusEvent(eventType, x, y, pressure);
++    }
++
++    return false;  // Don't consume the event
++}
++
++
++/**
++ * Handle stylus button events
++ * Dispatches to plugin system
++ */
++auto XournalView::onStylusButtonEvent(GtkWidget* widget, GdkEventButton* event) -> bool {
++    GdkDevice* device = gdk_event_get_source_device((GdkEvent*)event);
++    if (!device) {
++        return false;
++    }
++
++    GdkInputSource source = gdk_device_get_source(device);
++
++    // Only handle stylus/pen events
++    if (source != GDK_SOURCE_PEN && source != GDK_SOURCE_ERASER) {
++        return false;
++    }
++
++    // Get button number and state
++    guint button = event->button;
++    bool pressed = (event->type == GDK_BUTTON_PRESS);
++    double x = event->x;
++    double y = event->y;
++
++    // Notify plugins
++    if (this->control->getPluginController()) {
++        this->control->getPluginController()->notifyStylusEvent("button", x, y, 0.0, button, pressed);
++    }
++
++    return false;  // Don't consume the event
++}
++
++
++/**
++ * Handle stylus proximity events
++ * Called when stylus enters or leaves detection range
++ */
++auto XournalView::onProximityEvent(GtkWidget* widget, GdkEventProximity* event) -> bool {
++    GdkDevice* device = gdk_event_get_source_device((GdkEvent*)event);
++    if (!device) {
++        return false;
++    }
++
++    GdkInputSource source = gdk_device_get_source(device);
++    if (source != GDK_SOURCE_PEN && source != GDK_SOURCE_ERASER) {
++        return false;
++    }
++
++    bool entering = (event->type == GDK_PROXIMITY_IN);
++    if (this->control->getPluginController()) {
++        this->control->getPluginController()->notifyProximityEvent(entering);
++    }
++
++    return false;
++}
++
+ /**
+  * Mouse button release callback
+  */
+@@ -350,6 +439,18 @@ void XournalView::registerXournalWidget(GtkWidget* widget) {
+
+     g_signal_connect(widget, "motion_notify_event", G_CALLBACK(onMotionNotifyEvent), this);
+
++    // Register stylus-specific event handlers
++    gtk_widget_add_events(widget, GDK_POINTER_MOTION_MASK |
++                                   GDK_BUTTON_PRESS_MASK |
++                                   GDK_BUTTON_RELEASE_MASK |
++                                   GDK_PROXIMITY_IN_MASK |
++                                   GDK_PROXIMITY_OUT_MASK);
++
++    g_signal_connect_after(widget, "motion_notify_event", G_CALLBACK(onStylusMotionEvent), this);
++    g_signal_connect_after(widget, "button_press_event", G_CALLBACK(onStylusButtonEvent), this);
++    g_signal_connect_after(widget, "button_release_event", G_CALLBACK(onStylusButtonEvent), this);
++    g_signal_connect(widget, "proximity_in_event", G_CALLBACK(onProximityEvent), this);
++    g_signal_connect(widget, "proximity_out_event", G_CALLBACK(onProximityEvent), this);
++
+     Layout* layout = gtk_xournal_get_layout(this->widget);
+     layout->setHandwritingRecognizer(this->control->getSettings()->getSelectedInputRecognizer());
+
+diff --git a/src/core/gui/XournalView.h b/src/core/gui/XournalView.h
+index 7890123..ghijklm 100644
+--- a/src/core/gui/XournalView.h
++++ b/src/core/gui/XournalView.h
+@@ -150,6 +150,12 @@ private:
+     static auto onButtonPressEvent(GtkWidget* widget, GdkEventButton* event, XournalView* xournal) -> bool;
+     static auto onButtonReleaseEvent(GtkWidget* widget, GdkEventButton* event, XournalView* xournal) -> bool;
+     static auto onMotionNotifyEvent(GtkWidget* widget, GdkEventMotion* event, XournalView* xournal) -> bool;
++
++    // Stylus event handlers
++    static auto onStylusMotionEvent(GtkWidget* widget, GdkEventMotion* event, XournalView* xournal) -> bool;
++    static auto onStylusButtonEvent(GtkWidget* widget, GdkEventButton* event, XournalView* xournal) -> bool;
++    static auto onProximityEvent(GtkWidget* widget, GdkEventProximity* event, XournalView* xournal) -> bool;
+
+     static void onRealized(GtkWidget* widget, XournalView* xournal);
+     static auto onKeyPressEvent(GtkWidget* widget, GdkEventKey* event, XournalView* xournal) -> bool;
