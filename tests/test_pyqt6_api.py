@@ -80,9 +80,13 @@ def test_qt_constants():
         assert hasattr(Qt, 'BrushStyle'), "Qt.BrushStyle não existe"
         assert hasattr(Qt.BrushStyle, 'NoBrush'), "Qt.BrushStyle.NoBrush não existe"
 
+        assert hasattr(Qt, 'Key'), "Qt.Key não existe"
+        assert hasattr(Qt.Key, 'Key_Escape'), "Qt.Key.Key_Escape não existe"
+
         # Verificar APIs antigas NÃO existem
         assert not hasattr(Qt, 'LeftButton'), "ERRO: Qt.LeftButton não deve existir (use Qt.MouseButton.LeftButton)"
         assert not hasattr(Qt, 'NoPen'), "ERRO: Qt.NoPen não deve existir (use Qt.PenStyle.NoPen)"
+        assert not hasattr(Qt, 'Key_Escape'), "ERRO: Qt.Key_Escape não deve existir (use Qt.Key.Key_Escape)"
 
         print("✓ Constantes Qt estão corretas")
         return True

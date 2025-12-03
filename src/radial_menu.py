@@ -91,6 +91,7 @@ class RadialMenuWidget(QWidget):
         self.show()
         self.raise_()
         self.activateWindow()
+        self.setFocus()  # Necessário para receber eventos de teclado
 
     def calculate_angle(self, x, y):
         """Calcula o ângulo de um ponto em relação ao centro"""
@@ -188,6 +189,14 @@ class RadialMenuWidget(QWidget):
 
             elif level == "outside":
                 self.hide()
+
+    def keyPressEvent(self, event):
+        """Processa eventos de teclado"""
+        if event.key() == Qt.Key.Key_Escape:
+            print("→ ESC pressionado, fechando menu")
+            self.hide()
+        else:
+            super().keyPressEvent(event)
 
     def paintEvent(self, event):
         """Desenha o menu radial de 3 níveis"""
