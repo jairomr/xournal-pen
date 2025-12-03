@@ -7,7 +7,7 @@ name = "xournal-radial-menu"
 version = "2.1.0"
 description = "Menu radial standalone para Xournal++ otimizado para stylus"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 license = {text = "GPL-2.0"}
 authors = [
     {name = "Xournal Radial Menu Contributors"}

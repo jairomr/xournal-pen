@@ -50,7 +50,7 @@ Para iniciar automaticamente com o Windows:
 
 ### Pré-requisitos
 
-- **Python 3.8+** instalado: https://www.python.org/downloads/
+- **Python 3.9+** instalado: https://www.python.org/downloads/
   - ⚠️ Marque a opção **"Add Python to PATH"** durante a instalação!
 
 ### Passo 1: Baixar o Código
@@ -66,23 +66,32 @@ cd xournal-pen
 2. Extraia em uma pasta
 3. Abra o prompt de comando nessa pasta
 
-### Passo 2: Criar Ambiente Virtual
+### Passo 2: Instalar Dependências
 
 ```cmd
+# Opção A: Instalar globalmente (mais simples)
+pip install PyQt5 pynput pyautogui pyyaml
+
+# Opção B: Com ambiente virtual (recomendado)
 python -m venv venv
 venv\Scripts\activate
-```
-
-### Passo 3: Instalar Dependências
-
-```cmd
 pip install -r requirements.txt
 ```
 
-### Passo 4: Executar
+### Passo 3: Executar
 
 ```cmd
+# Método 1: Script direto
+python run.py
+
+# Método 2: Via módulo
 python src\main.py
+```
+
+**Observação:** Se você usar `uv`, execute apenas:
+```cmd
+uv pip install PyQt5 pynput pyautogui pyyaml
+python run.py
 ```
 
 ---
