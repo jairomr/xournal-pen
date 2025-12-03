@@ -384,10 +384,39 @@ end
 -- ==============================================================================
 
 -- Obtém posição para desenhar o menu
--- LIMITAÇÃO: A API Lua não fornece acesso à posição atual do cursor/stylus
--- Por isso, usamos a posição configurável em MenuState.defaultMenuX/Y
--- Para mudar a posição do menu, edite os valores no início deste arquivo
+-- Tenta obter posição real do cursor via LuaGObject (lgi)
+-- Se falhar, usa posição configurável em MenuState.defaultMenuX/Y
 function getCurrentCursorPosition()
+    -- Tentar obter posição real do cursor usando LuaGObject
+    local success, lgi = pcall(require, "lgi")
+
+    if success then
+        -- LuaGObject disponível, tentar obter posição do cursor
+        local ok, Gdk = pcall(lgi.require, lgi, "Gdk", "3.0")
+
+        if ok and Gdk then
+            local display = Gdk.Display.get_default()
+            if display then
+                local seat = display:get_default_seat()
+                if seat then
+                    local pointer = seat:get_pointer()
+                    if pointer then
+                        local _, x, y = pointer:get_position_double()
+                        if x and y then
+                            -- Sucesso! Temos a posição real do cursor
+                            -- Nota: Estas são coordenadas de TELA, não de página
+                            -- Mas ainda é melhor que posição fixa
+                            print("RadialMenu: Posição do cursor obtida: " .. x .. ", " .. y)
+                            return x, y
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    -- Fallback: usar posição configurável
+    print("RadialMenu: Usando posição padrão (lgi não disponível ou falhou)")
     return MenuState.defaultMenuX, MenuState.defaultMenuY
 end
 

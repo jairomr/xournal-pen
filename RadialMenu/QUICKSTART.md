@@ -1,5 +1,18 @@
 # 🚀 Guia de Início Rápido - RadialMenu Plugin
 
+## ✨ Novidade: Menu Segue o Cursor!
+
+O plugin **detecta automaticamente** a posição do cursor se você tiver `lua-lgi` instalado:
+
+```bash
+sudo apt install lua-lgi  # Ubuntu/Debian
+```
+
+✅ Com lgi → Menu aparece onde está o cursor!
+⚠️ Sem lgi → Menu usa posição fixa (configurável)
+
+---
+
 ## Instalação em 3 Passos (Linux)
 
 ### 1️⃣ Instalar o Plugin

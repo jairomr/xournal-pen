@@ -22,16 +22,32 @@ A API de plugins Lua do Xournal++ **não suporta captura direta de eventos de st
 
 ### 2. Posição do Menu
 
-A API Lua **não fornece acesso à posição atual do cursor/stylus**.
+A API oficial de plugins Lua **não fornece** função para obter posição do cursor.
 
-**Comportamento atual:**
-- O menu sempre aparece na **mesma posição** (configurável)
-- Posição padrão: (300, 400) pixels
-- Você pode **customizar** esta posição editando `defaultMenuX` e `defaultMenuY` no arquivo `main.lua`
+**Solução implementada com LuaGObject (lgi):**
 
-**Solução futura:**
-- Com o patch C++ (incluído em `cpp-patch/`), o menu poderia aparecer exatamente onde a caneta está
-- Requer recompilar o Xournal++ do código-fonte
+O plugin **tenta automaticamente** obter a posição real do cursor usando a biblioteca LuaGObject:
+
+✅ **Se lgi estiver instalado** → Menu aparece na posição do cursor!
+⚠️ **Se lgi NÃO estiver disponível** → Menu usa posição configurável (fallback)
+
+**Como instalar lgi (para obter posição automática):**
+
+```bash
+# Ubuntu/Debian
+sudo apt install lua-lgi
+
+# Arch Linux
+sudo pacman -S lua-lgi
+
+# Fedora
+sudo dnf install lua-lgi
+```
+
+**Configurar posição de fallback:**
+Edite `defaultMenuX` e `defaultMenuY` no arquivo `main.lua` caso lgi não esteja disponível.
+
+**Observação:** lgi já vem incluído no Xournal++ em Windows, macOS, Snap e Flatpak.
 
 ## 📦 Instalação
 
