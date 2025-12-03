@@ -1,170 +1,152 @@
 """
-Menu Radial SUPER SIMPLES - janela normal com botões
+Menu GRADE SIMPLES - botões em linhas
 """
-from PyQt6.QtWidgets import QWidget, QPushButton
+from PyQt6.QtWidgets import QDialog, QPushButton, QGridLayout, QLabel
 from PyQt6.QtCore import Qt, pyqtSignal
 from PyQt6.QtGui import QColor
-import math
 
 
-class RadialMenuWidget(QWidget):
-    """Menu radial SUPER SIMPLES - sem transparência complicada"""
+class RadialMenuWidget(QDialog):
+    """Menu em GRADE - super simples"""
 
     itemSelected = pyqtSignal(str, dict)
 
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        # Janela NORMAL - sem transparência!
-        self.setWindowFlags(Qt.WindowType.Popup)  # Popup fecha ao clicar fora
-        self.setStyleSheet("background-color: rgb(40, 40, 40);")  # Fundo cinza escuro
+        self.setWindowTitle("Xournal++ Menu")
+        self.setModal(False)
+        self.setWindowFlags(Qt.WindowType.Popup)
 
-        # Tamanho
-        self.menu_size = 500
-        self.setFixedSize(self.menu_size, self.menu_size)
-        self.center_x = self.menu_size // 2
-        self.center_y = self.menu_size // 2
+        layout = QGridLayout()
+        layout.setSpacing(5)
 
-        # 16 cores
-        self.colors = [
+        # Título
+        title = QLabel("CORES")
+        title.setStyleSheet("font-size: 14px; font-weight: bold; color: white;")
+        layout.addWidget(title, 0, 0, 1, 4)
+
+        # 16 cores em 2 linhas de 8
+        colors = [
             ("Preto", QColor(0, 0, 0)),
-            ("Cinza Escuro", QColor(64, 64, 64)),
+            ("Cinza E", QColor(64, 64, 64)),
             ("Cinza", QColor(128, 128, 128)),
-            ("Cinza Claro", QColor(192, 192, 192)),
+            ("Cinza C", QColor(192, 192, 192)),
             ("Branco", QColor(255, 255, 255)),
             ("Vermelho", QColor(255, 0, 0)),
             ("Laranja", QColor(255, 127, 0)),
             ("Amarelo", QColor(255, 255, 0)),
-            ("Verde Lima", QColor(127, 255, 0)),
+            ("V.Lima", QColor(127, 255, 0)),
             ("Verde", QColor(0, 192, 0)),
             ("Ciano", QColor(0, 255, 255)),
-            ("Azul Claro", QColor(51, 153, 255)),
+            ("Azul C", QColor(51, 153, 255)),
             ("Azul", QColor(51, 51, 204)),
             ("Roxo", QColor(127, 0, 255)),
             ("Magenta", QColor(255, 0, 255)),
             ("Rosa", QColor(255, 0, 127)),
         ]
 
-        # 16 ferramentas
-        self.tools = [
-            ("Caneta Fina", "pen_fine", "✏"),
-            ("Caneta Média", "pen_medium", "✎"),
-            ("Caneta Grossa", "pen_thick", "✐"),
-            ("Marca-Texto", "highlighter", "▓"),
-            ("Borracha", "eraser", "⌫"),
-            ("Seleção", "select", "⬚"),
-            ("Mão", "hand", "✋"),
-            ("Zoom +", "zoom_in", "+"),
-            ("Zoom -", "zoom_out", "-"),
-            ("Desfazer", "undo", "↶"),
-            ("Refazer", "redo", "↷"),
-            ("Pág ◄", "page_prev", "◄"),
-            ("Pág ►", "page_next", "►"),
-            ("Texto", "text", "T"),
-            ("Imagem", "image", "🖼"),
-            ("Régua", "ruler", "📏"),
-        ]
+        row = 1
+        for i, (name, color) in enumerate(colors):
+            col = i % 8
+            if i == 8:
+                row = 2
 
-        self._create_buttons()
-
-    def _create_buttons(self):
-        """Cria botões grandes e fáceis de clicar"""
-
-        # Botões de CORES - anel do meio
-        radius = 120
-        size = 45
-
-        for i, (name, color) in enumerate(self.colors):
-            angle = (i * 360 / 16 - 90) * math.pi / 180  # -90 para começar no topo
-            x = self.center_x + radius * math.cos(angle) - size // 2
-            y = self.center_y + radius * math.sin(angle) - size // 2
-
-            btn = QPushButton(self)
-            btn.setGeometry(int(x), int(y), size, size)
+            btn = QPushButton(name)
+            btn.setFixedSize(70, 50)
             btn.setStyleSheet(f"""
                 QPushButton {{
                     background-color: rgb({color.red()}, {color.green()}, {color.blue()});
-                    border: 3px solid white;
-                    border-radius: {size//2}px;
-                    font-size: 8px;
                     color: white;
-                }}
-                QPushButton:hover {{
-                    border: 4px solid yellow;
-                }}
-                QPushButton:pressed {{
-                    border: 4px solid red;
-                }}
-            """)
-            btn.clicked.connect(lambda checked, n=name, c=color: self._select_color(n, c))
-
-        # Botões de FERRAMENTAS - anel externo
-        radius = 200
-        size = 55
-
-        for i, (name, action, icon) in enumerate(self.tools):
-            angle = (i * 360 / 16 - 90) * math.pi / 180
-            x = self.center_x + radius * math.cos(angle) - size // 2
-            y = self.center_y + radius * math.sin(angle) - size // 2
-
-            btn = QPushButton(icon, self)
-            btn.setGeometry(int(x), int(y), size, size)
-            btn.setToolTip(name)  # Mostra nome ao passar mouse
-            btn.setStyleSheet(f"""
-                QPushButton {{
-                    background-color: rgb(220, 220, 220);
-                    border: 3px solid black;
-                    border-radius: {size//2}px;
-                    font-size: 24px;
+                    border: 2px solid white;
                     font-weight: bold;
                 }}
                 QPushButton:hover {{
-                    background-color: rgb(100, 150, 255);
-                    border: 4px solid yellow;
-                }}
-                QPushButton:pressed {{
-                    background-color: rgb(50, 100, 200);
-                    border: 4px solid red;
+                    border: 3px solid yellow;
                 }}
             """)
-            btn.clicked.connect(lambda checked, n=name, a=action: self._select_tool(n, a))
+            btn.clicked.connect(lambda checked, n=name, c=color: self._select_color(n, c))
+            layout.addWidget(btn, row, col)
 
-        # Botão FECHAR no centro
-        size = 60
-        btn = QPushButton("✕", self)
-        btn.setGeometry(self.center_x - size//2, self.center_y - size//2, size, size)
-        btn.setStyleSheet(f"""
-            QPushButton {{
+        # Título ferramentas
+        title = QLabel("FERRAMENTAS")
+        title.setStyleSheet("font-size: 14px; font-weight: bold; color: white;")
+        layout.addWidget(title, 3, 0, 1, 4)
+
+        # 16 ferramentas em 2 linhas
+        tools = [
+            ("Caneta F", "pen_fine"),
+            ("Caneta M", "pen_medium"),
+            ("Caneta G", "pen_thick"),
+            ("Marca-Texto", "highlighter"),
+            ("Borracha", "eraser"),
+            ("Seleção", "select"),
+            ("Mão", "hand"),
+            ("Zoom +", "zoom_in"),
+            ("Zoom -", "zoom_out"),
+            ("Desfazer", "undo"),
+            ("Refazer", "redo"),
+            ("Pág ◄", "page_prev"),
+            ("Pág ►", "page_next"),
+            ("Texto", "text"),
+            ("Imagem", "image"),
+            ("Régua", "ruler"),
+        ]
+
+        row = 4
+        for i, (name, action) in enumerate(tools):
+            col = i % 8
+            if i == 8:
+                row = 5
+
+            btn = QPushButton(name)
+            btn.setFixedSize(70, 50)
+            btn.setStyleSheet("""
+                QPushButton {
+                    background-color: rgb(220, 220, 220);
+                    border: 2px solid black;
+                    font-weight: bold;
+                }
+                QPushButton:hover {
+                    background-color: rgb(100, 150, 255);
+                    border: 3px solid yellow;
+                }
+            """)
+            btn.clicked.connect(lambda checked, n=name, a=action: self._select_tool(n, a))
+            layout.addWidget(btn, row, col)
+
+        # Botão fechar
+        close_btn = QPushButton("FECHAR")
+        close_btn.setFixedHeight(40)
+        close_btn.setStyleSheet("""
+            QPushButton {
                 background-color: rgb(200, 50, 50);
-                border: 3px solid white;
-                border-radius: {size//2}px;
                 color: white;
-                font-size: 30px;
+                border: 2px solid white;
+                font-size: 14px;
                 font-weight: bold;
-            }}
-            QPushButton:hover {{
+            }
+            QPushButton:hover {
                 background-color: rgb(255, 100, 100);
-                border: 4px solid yellow;
-            }}
+            }
         """)
-        btn.clicked.connect(self.hide)
+        close_btn.clicked.connect(self.hide)
+        layout.addWidget(close_btn, 6, 0, 1, 8)
+
+        self.setLayout(layout)
+        self.setStyleSheet("background-color: rgb(50, 50, 50);")
 
     def _select_color(self, name, color):
-        """Cor selecionada"""
         print(f"✓ COR: {name}")
         self.itemSelected.emit("color", {"name": name, "color": color})
         self.hide()
 
     def _select_tool(self, name, action):
-        """Ferramenta selecionada"""
         print(f"✓ FERRAMENTA: {name} ({action})")
         self.itemSelected.emit("tool", {"name": name, "action": action})
         self.hide()
 
     def show_at(self, x, y):
-        """Mostra menu"""
         print(f"→ Abrindo menu em ({x}, {y})")
-        self.move(x - self.center_x, y - self.center_y)
+        self.move(x - 300, y - 150)  # Centraliza aprox
         self.show()
-        self.raise_()
-        self.activateWindow()

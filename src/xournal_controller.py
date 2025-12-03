@@ -166,9 +166,11 @@ class XournalController:
         if action_type == "color":
             # Verificar se tem cor customizada do HSV picker
             custom_color = action_data.get("color", None)
-            self.change_color(action_data["name"], custom_color)
+            if "name" in action_data:
+                self.change_color(action_data["name"], custom_color)
         elif action_type == "tool":
-            self.change_tool(action_data["action"])
+            if "action" in action_data:
+                self.change_tool(action_data["action"])
 
     @staticmethod
     def is_xournal_active():
