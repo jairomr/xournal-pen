@@ -23,6 +23,9 @@ class StylusHandler:
         self.current_x = 0
         self.current_y = 0
 
+        # Rastreamento de teclas modificadoras
+        self.alt_pressed = False
+
     def start(self):
         """Inicia captura de eventos"""
         if self.running:
@@ -30,22 +33,21 @@ class StylusHandler:
 
         self.running = True
 
-        # Listener de mouse (captura posição e botões)
+        # Listener de mouse (apenas para capturar posição)
         self.mouse_listener = mouse.Listener(
-            on_move=self._on_mouse_move,
-            on_click=self._on_mouse_click
+            on_move=self._on_mouse_move
         )
         self.mouse_listener.start()
 
-        # Listener de teclado (Alt+R como alternativa)
+        # Listener de teclado (Alt+R)
         self.keyboard_listener = keyboard.Listener(
-            on_press=self._on_key_press
+            on_press=self._on_key_press,
+            on_release=self._on_key_release
         )
         self.keyboard_listener.start()
 
         print("StylusHandler: Iniciado")
-        print("  - Botão lateral da caneta ou botão auxiliar do mouse")
-        print("  - Alt+R como alternativa")
+        print("  - Pressione Alt+R para abrir menu radial")
 
     def stop(self):
         """Para captura de eventos"""
@@ -70,36 +72,30 @@ class StylusHandler:
         if self.on_move:
             self.on_move(x, y)
 
-    def _on_mouse_click(self, x, y, button, pressed):
-        """Callback quando botão do mouse é clicado"""
-        if not pressed:
-            return
-
-        # Botões que ativam o menu:
-        # - Button.x1 e Button.x2 (botões auxiliares, comum em stylus)
-        # - Button.middle (roda do mouse, às vezes mapeado)
-        trigger_buttons = [
-            mouse.Button.x1,
-            mouse.Button.x2,
-            mouse.Button.middle
-        ]
-
-        if button in trigger_buttons:
-            print(f"StylusHandler: Botão {button} detectado em ({x}, {y})")
-            if self.on_button_press:
-                self.on_button_press(x, y)
-
     def _on_key_press(self, key):
         """Callback quando tecla é pressionada"""
         try:
-            # Detectar Alt+R
-            if hasattr(key, 'char') and key.char == 'r':
-                if self.keyboard_listener._current_modifiers & keyboard.Key.alt:
+            # Rastrear Alt
+            if key == keyboard.Key.alt or key == keyboard.Key.alt_l or key == keyboard.Key.alt_r:
+                self.alt_pressed = True
+                return
+
+            # Detectar R quando Alt está pressionado
+            if self.alt_pressed:
+                if hasattr(key, 'char') and key.char and key.char.lower() == 'r':
                     print(f"StylusHandler: Alt+R detectado em ({self.current_x}, {self.current_y})")
                     if self.on_button_press:
                         self.on_button_press(self.current_x, self.current_y)
         except AttributeError:
-            # Tecla especial, ignorar
+            pass
+
+    def _on_key_release(self, key):
+        """Callback quando tecla é solta"""
+        try:
+            # Liberar Alt
+            if key == keyboard.Key.alt or key == keyboard.Key.alt_l or key == keyboard.Key.alt_r:
+                self.alt_pressed = False
+        except AttributeError:
             pass
 
 

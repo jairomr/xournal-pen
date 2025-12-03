@@ -35,14 +35,14 @@ class RadialMenuApp:
         print("="*60)
         print()
         print("✓ Aplicação iniciada")
-        print("  - Pressione botão lateral da stylus ou Alt+R para abrir menu")
+        print("  - Pressione Alt+R para abrir menu radial")
         print("  - ESC para fechar menu")
         print("  - Ctrl+Q para sair da aplicação")
         print()
 
     def on_stylus_button(self, x, y):
-        """Callback quando botão da stylus é pressionado"""
-        print(f"→ Botão stylus detectado em ({x}, {y})")
+        """Callback quando Alt+R é pressionado"""
+        print(f"→ Alt+R detectado em ({x}, {y})")
 
         if self.menu.isVisible():
             print("→ Fechando menu")
