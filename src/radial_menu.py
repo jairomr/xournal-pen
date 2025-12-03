@@ -192,10 +192,11 @@ class RadialMenuWidget(QWidget):
     def paintEvent(self, event):
         """Desenha o menu radial de 3 níveis"""
         painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
         cx = self.center_x
         cy = self.center_y
+        black = QColor(0, 0, 0)
 
         # 1. Fundo semi-transparente geral
         painter.setBrush(QBrush(QColor(0, 0, 0, 80)))

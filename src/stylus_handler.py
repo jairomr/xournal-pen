@@ -83,6 +83,10 @@ class StylusHandler:
             # Detectar R quando Alt está pressionado
             if self.alt_pressed:
                 if hasattr(key, 'char') and key.char and key.char.lower() == 'r':
+                    # Obter posição atual do cursor diretamente
+                    mouse_controller = mouse.Controller()
+                    pos = mouse_controller.position
+                    self.current_x, self.current_y = pos
                     print(f"StylusHandler: Alt+R detectado em ({self.current_x}, {self.current_y})")
                     if self.on_button_press:
                         self.on_button_press(self.current_x, self.current_y)
