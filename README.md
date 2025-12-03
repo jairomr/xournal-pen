@@ -2,7 +2,7 @@
 
 **Menu radial standalone para Xournal++** projetado para uso com stylus/mesa digitalizadora.
 
-![Version](https://img.shields.io/badge/version-2.0.0-blue)
+![Version](https://img.shields.io/badge/version-2.1.0-blue)
 ![Python](https://img.shields.io/badge/python-3.8+-green)
 ![License](https://img.shields.io/badge/license-GPL--2.0-red)
 
